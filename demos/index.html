@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <title></title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+
+<body>
+  <div id="mocha"></div>
+
+  <script src="../dist/umd/index.js"></script>
+
+  <script>
+    window.onload = async function () {
+
+      let fs = await IDBFileSystem.getInstance()
+      let dir = await fs.root.getDirectory('测试文件夹1')
+      let file = await fs.root.getFile('测试文件1')
+      await file.write('我爱北京天安门')
+      file.readAsText().then(content => console.log(content))
+
+    }
+  </script>
+</body>
+
+</html>
