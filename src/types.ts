@@ -56,8 +56,8 @@ export declare class IFileEntry extends IEntry {
      * @param {String} type
      * @param {Boolean} append
      */
-    write(content: any, type?: string, append?: boolean): Promise<void>;
-    append(content: any): Promise<void>;
+    write(content: any, type?: string, append?: boolean):  Promise<IFileEntry>;
+    append(content: any): Promise<IFileEntry>;
     getBlob(): Promise<Blob>;
     readAsArrayBuffer(): Promise<string>;
     readAsBinaryString(): Promise<string>;
@@ -72,10 +72,7 @@ export declare class IDirectoryEntry extends IEntry {
      * @param {String} path 路径
      * @param {Object} options  create:是否创建 ， exclusive 排他
      */
-    getFile(path: string, options?: {
-        create: boolean;
-        exclusive: boolean;
-    }): Promise<IFileEntry>;
+    getFile(path: string, options?: OpOptions): Promise<IFileEntry>;
     /**
      * 获取目录 done
      * @param {String} path

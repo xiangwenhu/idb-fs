@@ -21,6 +21,10 @@
       let dir = await fs.root.getDirectory('测试文件夹1')
       let file = await fs.root.getFile('测试文件1')
       await file.write('我爱北京天安门')
+
+
+      await file.rename("测试文件1.txt")
+
       file.readAsText().then(content => console.log(content))
 
     }

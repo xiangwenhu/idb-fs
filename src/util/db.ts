@@ -1,4 +1,4 @@
-export function getDatabaseWithStore(dbVersion: number = 2.0, dbName: string, storeName: string): Promise<IDBDatabase> {
+export function getDatabaseWithStore(dbVersion: number = 1.0, dbName: string, storeName: string): Promise<IDBDatabase> {
     return new Promise((resolve, reject) => {
         const request = self.indexedDB.open(dbName, dbVersion)
         request.onerror = (event) => {

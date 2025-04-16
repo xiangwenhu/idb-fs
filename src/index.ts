@@ -4,14 +4,13 @@ import IndexedDBProvider from "./IndexedDBProvider";
 import { InstanceOptions } from "./types";
 import { getDatabaseWithStore } from "./util/db";
 
-export function isSupported() {
-    return !!(self.indexedDB && self.IDBTransaction && self.IDBKeyRange)
-}
-
 const DefaultOptions: InstanceOptions = {
     name: IDB_DEFAULT_DATABASE_NAME
 };
 
+export function isSupported() {
+    return !!(self.indexedDB && self.IDBTransaction && self.IDBKeyRange)
+}
 
 export function getInstance(options: InstanceOptions = DefaultOptions) {
     if (!isSupported()) return Promise.reject(NOT_SUPPORTED);

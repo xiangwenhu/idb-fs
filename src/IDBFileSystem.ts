@@ -5,7 +5,7 @@ export default class IDBFileSystem {
 
     public root: DirectoryEntry;
 
-    constructor(public provider: IndexedDBProvider) {
+    constructor(private provider: IndexedDBProvider) {
         this.root = provider.root;
     }
 }

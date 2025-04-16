@@ -25,16 +25,30 @@ export class Entry {
         return this.dispatch('getMetadata')
     }
 
-    moveTo() {
-        throw NOT_IMPLEMENTED_ERROR
+    /**
+     * 移动
+     * @param dist 
+     * @returns 
+     */
+    moveTo(dist: string) {
+        return Promise.reject(NOT_IMPLEMENTED_ERROR)
         //this._dispatch('moveTo', [...arguments])
     }
 
-    copyTo() {
-        throw NOT_IMPLEMENTED_ERROR
+    /**
+     * 复制
+     * @param dist 
+     * @returns 
+     */
+    copyTo(dist: string) {
+        return Promise.reject(NOT_IMPLEMENTED_ERROR)
         // this._dispatch('copyTo', [...arguments])
     }
 
+    /**
+     * 转为URL
+     * @returns 
+     */
     toURL(): Promise<string> {
         return this.dispatch('toURL')
     }
@@ -53,6 +67,14 @@ export class Entry {
         return this.dispatch('getParent')
     }
 
+    /**
+     * 重命名
+     * @param name 
+     * @returns 
+     */
+    rename(name: string): Promise<any> {
+        return Promise.reject(NOT_IMPLEMENTED_ERROR)
+    }
 
     protected dispatch<R = any>(method: string, ...args: any[]): Promise<R> {
         return new Promise(resolve => {

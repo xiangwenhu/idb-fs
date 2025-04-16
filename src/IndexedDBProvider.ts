@@ -27,7 +27,7 @@ export default class IndexedDBProvider {
         return newEntry
     }
 
-    private setProvider(entry: FileEntry | DirectoryEntry){
+    private setProvider(entry: FileEntry | DirectoryEntry) {
         Object.defineProperty(entry, "__provider__", {
             enumerable: false,
             configurable: false,
@@ -97,14 +97,14 @@ export default class IndexedDBProvider {
      * @param {blob类型} type 
      * @param {是否是append模式} append 
      */
-    protected write(entry: FileEntry | DirectoryEntry, content: any, type = 'text/plain') {
+    protected write(entry: FileEntry, content: any, type = 'text/plain') {
         this.checkEntry(entry)
         if (entry.isFile !== true) {
             throw new FileError(FILE_ERROR.ONLY_FILE_WRITE)
         }
         let data = contentToBlob(content, type);
 
-        const fileEntry = entry as FileEntry;
+        const fileEntry = entry;
 
         let file = fileEntry.file
         if (!file) {
@@ -306,5 +306,16 @@ export default class IndexedDBProvider {
         }, true).then((dirEntries) => {
             return dirEntries && dirEntries[dirEntries.length - 1]
         }).catch(err => { throw err })
+    }
+
+    protected async renameFile(entry: FileEntry, newName: string) {
+        const dir = await entry.getParent();
+        const file = await dir.getFile(newName, { create: false, exclusive: true });
+        if (file) throw new Error(`${FILE_ERROR.FILE_EXISTED}: ${newName}`);
+
+        await entry.remove();
+        const newEntry = await dir.getFile(newName);
+        await newEntry.write(entry.file.blob);
+        return newEntry
     }
 }

@@ -8,16 +8,16 @@ import { DIR_SEPARATOR, PathBlackList } from "../const"
  * @param {*是否需要执行结果集} needResults
  */
 export function promiseForEach(arr: any[], cb: Function, needResults: boolean) {
-    const realResult: any[] = []
-    let result = Promise.resolve()
+    const result: any[] = []
+    let p = Promise.resolve()
     Array.from(arr).forEach((val, index) => {
-        result = result.then(() => {
+        p = p.then(() => {
             return cb(val, index).then((res: any) => {
-                needResults && realResult.push(res)
+                needResults && result.push(res)
             })
         })
     })
-    return needResults ? result.then(() => realResult) : result
+    return needResults ? p.then(() => result) : p
 }
 
 
@@ -64,7 +64,7 @@ export function isValidatedPath(path: string) {
     return PathBlackList.test(path) ? false : true
 }
 
-export function contentToBlob(content: any, type = 'text/plain') {
+export function contentToBlob(content: any, type = 'text/plain'): Blob {
     let blob
     // 不是blob，转为blob
     if (content instanceof Blob) {
