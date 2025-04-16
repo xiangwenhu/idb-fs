@@ -6,8 +6,7 @@ export interface OpOptions {
 
 
 export interface InstanceOptions {
-    storeName?: string;
-    version?: number
+    name?: string;
 }
 
 

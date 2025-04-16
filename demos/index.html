@@ -15,7 +15,9 @@
   <script>
     window.onload = async function () {
 
-      let fs = await IDBFileSystem.getInstance()
+      let fs = await IDBFileSystem.getInstance({
+        name: "管理系统A"
+      })
       let dir = await fs.root.getDirectory('测试文件夹1')
       let file = await fs.root.getFile('测试文件1')
       await file.write('我爱北京天安门')
