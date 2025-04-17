@@ -1,4 +1,4 @@
-export class FileError extends Error {
+export class IDBFileError extends Error {
     public type: string = "FileError";
     constructor(public message: string) {
         super(message)

@@ -1,91 +1,32 @@
+export type IDBHandleKind = "file" | "directory";
 
 export interface OpOptions {
     create?: boolean;
     exclusive?: boolean
 }
 
-
 export interface InstanceOptions {
     name?: string;
 }
 
-
-export declare class IEntry {
-    isFile: boolean;
-    isDirectory: boolean;
+export interface IDBStoreBaseItem {
+    kind: IDBHandleKind;
     name: string;
-    fullPath: string;
-    metadata: Metadata;
-    private provider;
-    constructor(isFile: boolean | undefined, isDirectory: boolean | undefined, name: string, fullPath: string);
-    /**
-     * 获取元数据 done
-     */
-    getMetadata(): Promise<Metadata>;
-    moveTo(): void;
-    copyTo(): void;
-    toURL(): Promise<string>;
-    /**
-     * 删除  done
-     */
-    remove(): Promise<void>;
-    /**
-     * 获得父目录 done
-     */
-    getParent(): Promise<IDirectoryEntry>;
-    protected dispatch<R = any>(method: string, ...args: any[]): Promise<R>;
+    createTime: number;
+    lastModifiedTime: number;
 }
 
-export declare class IFSFile {
-    name: string;
-    size: number;
-    type: string;
-    createTime: Date;
-    blob: Blob | undefined;
-    lastModifiedTime: Date;
-    constructor(name: string, size: number, type: string, createTime: Date, blob: Blob | undefined);
+kind: "file";
+export interface IDBStoreInfoFileItem extends IDBStoreBaseItem {
+    fileKey: string;
+    type?: string; // mime type
 }
 
 
-export declare class IFileEntry extends IEntry {
-    file: IFSFile;
-    constructor(name: string, fullPath: string, file: IFSFile);
-    /**
-     * FileEntry写入数据 done
-     * @param {Blob|String|BufferArray} content
-     * @param {String} type
-     * @param {Boolean} append
-     */
-    write(content: any, type?: string, append?: boolean):  Promise<IFileEntry>;
-    append(content: any): Promise<IFileEntry>;
-    getBlob(): Promise<Blob>;
-    readAsArrayBuffer(): Promise<string>;
-    readAsBinaryString(): Promise<string>;
-    readAsDataURL(): Promise<string>;
-    readAsText(encoding?: string): Promise<string>;
+export interface IDBStoreInfoDirectoryItem extends IDBStoreBaseItem {
+    kind: "directory"
 }
 
-export declare class IDirectoryEntry extends IEntry {
-    constructor(name: string, fullPath: string);
-    /**
-     * 获取文件 done
-     * @param {String} path 路径
-     * @param {Object} options  create:是否创建 ， exclusive 排他
-     */
-    getFile(path: string, options?: OpOptions): Promise<IFileEntry>;
-    /**
-     * 获取目录 done
-     * @param {String} path
-     * @param {Object} options
-     */
-    getDirectory(path: string, options?: OpOptions): Promise<IDirectoryEntry>;
-    /**
-     * 递归删除 done
-     */
-    remove(): Promise<void>;
-    /**
-     * 获取目录下的目录和文件
-     */
-    getEntries(): Promise<(IFileEntry | IDirectoryEntry)[]>;
-    ensureDirectory(path: string): Promise<IDirectoryEntry>;
-}
+export type IDBStoreInfoItem = IDBStoreInfoFileItem | IDBStoreInfoDirectoryItem;
+
+export type IDBStoreFileItem = Uint8Array;

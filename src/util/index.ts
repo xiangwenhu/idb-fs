@@ -78,3 +78,7 @@ export function contentToBlob(content: any, type = 'text/plain'): Blob {
     }
     return blob
 }
+
+export function uuid(): string {
+    return URL.createObjectURL(new Blob([])).split("/").pop()!
+}

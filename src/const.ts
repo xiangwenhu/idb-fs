@@ -1,4 +1,4 @@
-import { FileError } from "./FileError";
+import { IDBFileError } from "./FileError";
 
 export const FILE_ERROR = {
     INITIALIZE_FAILED: '文件系统初始化失败',
@@ -15,7 +15,7 @@ export const DIR_OPEN_BOUND = String.fromCharCode(DIR_SEPARATOR.charCodeAt(0) + 
 
 export const PathBlackList = /[\\:*?"<>|]/;
 
-export const NOT_IMPLEMENTED_ERROR = new FileError('方法未实现');
+export const NOT_IMPLEMENTED_ERROR = new IDBFileError('方法未实现');
 
 export const NOT_SUPPORTED = new Error('浏览器不支持改功能');
 
@@ -23,5 +23,7 @@ export const IDB_DATABASE_PREFIX = "__idb_file_system__";
 
 export const IDB_DEFAULT_DATABASE_NAME = "default";
 
-export const IDB_DEFAULT_STORE_NAME = "FILES";
+export const IDB_INFO_STORE_NAME = "INFOS";
+
+export const IDB_FILE_STORE_NAME = "FILES";
 

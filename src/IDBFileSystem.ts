@@ -1,11 +1,11 @@
-import { DirectoryEntry } from "./DirectoryEntry"
-import IndexedDBProvider from "./IndexedDBProvider"
+import { IDBFileSystemDirectoryHandle } from "./IDBFileSystemDirectoryHandle"
+import StoreProvider from "./provider/index";
+
 
 export default class IDBFileSystem {
+    public root: IDBFileSystemDirectoryHandle;
 
-    public root: DirectoryEntry;
-
-    constructor(private provider: IndexedDBProvider) {
-        this.root = provider.root;
+    constructor(private storeProvider: StoreProvider) {
+        this.root = this.storeProvider.directory.toDirectoryHandle("/", "/")
     }
 }

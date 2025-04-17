@@ -1,7 +1,8 @@
-import { IDB_DATABASE_PREFIX,  IDB_DEFAULT_DATABASE_NAME,  NOT_SUPPORTED , IDB_DEFAULT_STORE_NAME} from "./const";
+import { IDB_DATABASE_PREFIX, IDB_DEFAULT_DATABASE_NAME, IDB_FILE_STORE_NAME, IDB_INFO_STORE_NAME, NOT_SUPPORTED } from "./const";
 import IDBFileSystem from "./IDBFileSystem";
-import IndexedDBProvider from "./IndexedDBProvider";
-import { InstanceOptions } from "./types";
+import StoreProvider from "./provider/index";
+import ObjectStore from "./provider/ObjectStore";
+import { IDBStoreBaseItem, IDBStoreFileItem, IDBStoreInfoItem, InstanceOptions } from "./types";
 import { getDatabaseWithStore } from "./util/db";
 
 const DefaultOptions: InstanceOptions = {
@@ -20,10 +21,15 @@ export function getInstance(options: InstanceOptions = DefaultOptions) {
     if (dbName === "") return Promise.reject(`无效的database name`);
 
     const fullDBName = `${IDB_DATABASE_PREFIX}_${dbName}`;
-    const storeName = IDB_DEFAULT_STORE_NAME;
+    const infoStoreName = IDB_INFO_STORE_NAME;
+    const fileStoreName = IDB_FILE_STORE_NAME;
 
-    return getDatabaseWithStore(1.0, fullDBName, storeName)
-        .then(db => new IndexedDBProvider(db, storeName))
-        .then(provider => new IDBFileSystem(provider))
+    return getDatabaseWithStore(1.0, fullDBName, [infoStoreName, fileStoreName])
+        .then(db =>  {
+            const infoStore = new ObjectStore<string, IDBStoreInfoItem>(db, {storeName: infoStoreName});
+            const fileStore = new ObjectStore<string, IDBStoreFileItem>(db, {storeName: fileStoreName});
+            const storeProvider = new StoreProvider(infoStore, fileStore);
+            return new IDBFileSystem(storeProvider);            
+        })
 }
 

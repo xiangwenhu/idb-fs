@@ -7,6 +7,7 @@
 
 ### 存储
 *  一个ObjectStore存基本信息，另外一个存Blob
+*  存储Blob的ObjectStore的key是 uuid，通过uuid关联，这样文件重命名的时候，不涉及Blob的转存。
 *  Blob 转 File
   
 

@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <title></title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+
+<body>
+  <div id="mocha"></div>
+
+  <script src="../dist/umd/index.js"></script>
+
+  <button onclick="showPicker()">点我啊</button>
+
+  <script>
+
+
+    async function showPicker() {
+      const dirHandle = await window.showDirectoryPicker();
+
+      for await (const [key, value] of dirHandle.entries()) {
+        console.log({ key, value });
+      }
+
+    }
+
+  </script>
+</body>
+
+</html>
