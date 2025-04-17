@@ -1,4 +1,7 @@
-export function getDatabaseWithStore(dbVersion: number = 1.0, dbName: string, storeName: string): Promise<IDBDatabase> {
+export function getDatabaseWithStore(dbVersion: number = 1.0, dbName: string, storeNames: string | string[]): Promise<IDBDatabase> {
+
+    const sNames = Array.isArray(storeNames) ? storeNames : [storeNames];
+
     return new Promise((resolve, reject) => {
         const request = self.indexedDB.open(dbName, dbVersion)
         request.onerror = (event) => {
@@ -6,16 +9,18 @@ export function getDatabaseWithStore(dbVersion: number = 1.0, dbName: string, st
         }
         request.onsuccess = () => {
             const db = request.result;
-            if (db.objectStoreNames.contains(storeName)) {
+            if (sNames.every(name => db.objectStoreNames.contains(name))) {
                 return resolve(db)
             }
             reject(new Error("初始化database失败"))
         }
         request.onupgradeneeded = event => {
             const db = (event.target! as any).result as IDBDatabase;
-            if (!db.objectStoreNames.contains(storeName)) {
-                db.createObjectStore(storeName)
-            }
+            sNames.forEach(name => {
+                if (!db.objectStoreNames.contains(name)) {
+                    db.createObjectStore(name)
+                }
+            })
         }
     })
 }

@@ -5,7 +5,7 @@ import { contentToBlob } from "./util/index"
 
 export class FileEntry extends Entry {
     constructor(name: string, fullPath: string, public file: FSFile) {
-        super(true, false, name, fullPath)
+        super(true, name, fullPath)
         this.file = file
     }
     /**

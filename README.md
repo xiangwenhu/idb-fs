@@ -1,6 +1,9 @@
 
 # 基于indexedDB和promise的文件系统
 
+## TODO::
+* [ ] 分离基础数据和二进制文件
+
 ## 如何使用
 ```javascript
     window.onload = async function () {

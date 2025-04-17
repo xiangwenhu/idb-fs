@@ -5,7 +5,7 @@ import { isValidatedPath } from "./util/index"
 
 export class DirectoryEntry extends Entry {
     constructor(name: string, fullPath: string) {
-        super(false, true, name, fullPath)
+        super(false,  name, fullPath)
     }
 
     /**

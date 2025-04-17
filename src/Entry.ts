@@ -7,9 +7,11 @@ export class Entry {
 
     private __provider__!: any;
 
-    constructor(public isFile: boolean = true, public isDirectory = false, public name: string, public fullPath: string) {
+    public isDirectory: boolean;
+
+    constructor(public isFile: boolean = true,  public name: string, public fullPath: string) {
         this.isFile = isFile
-        this.isDirectory = isDirectory
+        this.isDirectory = !isFile;
         this.name = name
         this.fullPath = fullPath
         this.metadata = {
