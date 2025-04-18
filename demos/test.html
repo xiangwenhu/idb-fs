@@ -27,6 +27,12 @@
       //   console.log({ key, value });
       // }
 
+      const dir1 = await dirHandle.getDirectoryHandle("旅行者");
+      const dir2 = await dir1.getDirectoryHandle("飞山景区");
+      const f = await dir2.getFileHandle("marker_green.jpg");
+
+      dir2.resolve(dir1).then(console.log)
+
     }
 
   </script>

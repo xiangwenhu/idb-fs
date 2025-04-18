@@ -1,4 +1,4 @@
-import { DIR_SEPARATOR, PathBlackList } from "../const"
+import { DIR_SEPARATOR, PathBlackList } from "../const/index"
 
 /**
  * https://segmentfault.com/q/1010000007499416

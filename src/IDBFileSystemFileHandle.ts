@@ -1,13 +1,13 @@
 import { IDBFileSystemHandle } from "./IDBFileSystemHandle"
-import { IDBHandleKind } from "./types"
+import { IDBFileSystemFileHandleMetaData, IDBHandleKind } from "./types"
 
 export class IDBFileSystemFileHandle implements IDBFileSystemHandle {
 
-    // @ts-ignore TODO::
+    // @ts-ignore provider的信息，会通过 Object.defineProperty 挂载
     protected provider: any!;
 
-
-    path: string = "";
+    // @ts-ignore 文件一些原始数据， 会通过 Object.defineProperty 挂载
+    metaData: IDBFileSystemFileHandleMetaData;
 
     constructor(private filename: string) {
     }
@@ -34,7 +34,7 @@ export class IDBFileSystemFileHandle implements IDBFileSystemHandle {
      * @param fileSystemHandle 
      */
     isSameEntry(fileSystemHandle: IDBFileSystemFileHandle): boolean {
-        return  this.provider.isSameEntry(this, fileSystemHandle)
+        return this.provider.isSameEntry(this, fileSystemHandle)
     }
 
     /**

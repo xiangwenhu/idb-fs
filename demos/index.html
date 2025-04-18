@@ -19,22 +19,35 @@
 
       let fs = await IDBFileSystem.getInstance()
       let dirHandle = await fs.root.getDirectoryHandle('测试文件夹1', { create: true })
-      let fileHandle = await dirHandle.getFileHandle('测试文件1', { create: true })
-
-
-      const entries = fs.root.entries()
-
-      for await (const [key, value] of entries) {
-        console.log({ key, value });
-      }
-
-      for await (const key of fs.root.keys()) {
-        console.log("key:", key);
-      }
+      let fileHandle = await dirHandle.getFileHandle('测试文件1.txt', { create: true })
+      let fileHandle2 = await dirHandle.getFileHandle('测试文件2.txt', { create: true })
 
 
 
 
+      // resolve
+      dirHandle.resolve(fs.root).then(console.log).catch(console.error)
+
+
+
+      // 删除
+      // dirHandle.removeEntry('测试文件1.txt', {
+      //   recursive: true
+      // })
+
+
+      // 遍历
+      // const entries = fs.root.entries()
+      // for await (const [key, value] of entries) {
+      //   console.log({ key, value });
+      // }
+      // for await (const key of fs.root.keys()) {
+      //   console.log("key:", key);
+      // }
+
+
+
+      // 读取和写
       // const contents = "我们都是好孩子我们都是好孩子我们都是好孩子我们都是好孩子我们都是好孩子我们都是好孩子我们都是好孩子我们都是好孩子"
       // const writable = await fileHandle.createWritable();
       // // Write the contents of the file to the stream.

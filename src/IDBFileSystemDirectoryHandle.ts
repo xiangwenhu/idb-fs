@@ -1,13 +1,13 @@
-import { NOT_IMPLEMENTED_ERROR } from "./const"
 import { IDBFileSystemHandle } from "./IDBFileSystemHandle"
-import { GetHandleOptions, IDBHandleKind, RemoveEntryOptions } from "./types"
+import { GetHandleOptions, IDBFileSystemHandleMetaData, IDBHandleKind, RemoveEntryOptions } from "./types"
 
 export class IDBFileSystemDirectoryHandle implements IDBFileSystemHandle {
 
     // @ts-ignore
     protected provider: any!;
 
-    path: string = "";
+    // @ts-ignore 文件一些原始数据， 会通过 Object.defineProperty 挂载
+    metaData: IDBFileSystemHandleMetaData;
 
     constructor(private directoryName: string) {
 
@@ -42,8 +42,8 @@ export class IDBFileSystemDirectoryHandle implements IDBFileSystemHandle {
      * https://developer.mozilla.org/en-US/docs/Web/API/FileSystemHandle/remove
      * @param options 
      */
-    remove(): Promise<undefined> {
-        throw NOT_IMPLEMENTED_ERROR
+    remove(options?: RemoveEntryOptions): Promise<undefined> {
+        return this.provider.remove(this, options)
     }
 
     /**
@@ -103,7 +103,7 @@ export class IDBFileSystemDirectoryHandle implements IDBFileSystemHandle {
      * @param possibleDescendant 
      */
     resolve(possibleDescendant: IDBFileSystemHandle) {
-        throw NOT_IMPLEMENTED_ERROR
+        return this.provider.resolve(this, possibleDescendant)
     }
 
     /**

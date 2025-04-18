@@ -1,4 +1,4 @@
-import { IDB_DATABASE_PREFIX, IDB_DEFAULT_DATABASE_NAME, IDB_FILE_STORE_NAME, IDB_INFO_STORE_NAME, NOT_SUPPORTED } from "./const";
+import { IDB_DATABASE_PREFIX, IDB_DEFAULT_DATABASE_NAME, IDB_FILE_STORE_NAME, IDB_INFO_STORE_NAME, NOT_SUPPORTED } from "./const/index";
 import IDBFileSystem from "./IDBFileSystem";
 import StoreProvider from "./provider/index";
 import ObjectStore from "./provider/ObjectStore";

@@ -42,6 +42,14 @@ export interface RemoveEntryOptions {
     recursive?: boolean;
 }
 
-export interface GetHandleOptions { 
-    create?: boolean;    
+export interface GetHandleOptions {
+    create?: boolean;
+}
+
+export interface IDBFileSystemHandleMetaData {
+    path: string;
+}
+
+export interface IDBFileSystemFileHandleMetaData extends IDBFileSystemHandleMetaData {
+    fileKey: string;
 }

@@ -1,5 +1,3 @@
-import { IDBFileError } from "./FileError";
-
 export const FILE_ERROR = {
     INITIALIZE_FAILED: '文件系统初始化失败',
     FILE_EXISTED: '文件已存在',
@@ -14,8 +12,6 @@ export const DIR_SEPARATOR = '/';
 export const DIR_OPEN_BOUND = String.fromCharCode(DIR_SEPARATOR.charCodeAt(0) + 1);
 
 export const PathBlackList = /[\\:*?"<>|]/;
-
-export const NOT_IMPLEMENTED_ERROR = new IDBFileError('方法未实现');
 
 export const NOT_SUPPORTED = new Error('浏览器不支持改功能');
 
