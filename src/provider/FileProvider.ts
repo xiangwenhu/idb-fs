@@ -12,6 +12,25 @@ export default class FileProvider extends BaseProvider {
         super(infoStore, fileStore)
     }
 
+    async isSameEntry(handle1: IDBFileSystemFileHandle, handle2: IDBFileSystemFileHandle) {
+        if (handle1.kind !== 'file' || handle2.kind !== 'file') {
+            return false
+        }
+        if (handle1.path !== handle2.path) {
+            return false
+        }
+
+        const handle1Info = (await this.getInfoItem(handle1.path)) as IDBStoreInfoFileItem;
+        const handle2Info = (await this.getInfoItem(handle2.path)) as IDBStoreInfoFileItem;
+
+        if (!handle1Info || !handle2Info) {
+            return false
+        }
+
+        return handle1Info.fileKey === handle2Info.fileKey
+
+    }
+
     async getFile(fileHandle: IDBFileSystemFileHandle) {
         const info: IDBStoreBaseItem | undefined = await this.infoStore.get(fileHandle.path);
         if (!info) {

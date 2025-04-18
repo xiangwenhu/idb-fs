@@ -21,19 +21,28 @@
       let dirHandle = await fs.root.getDirectoryHandle('测试文件夹1', { create: true })
       let fileHandle = await dirHandle.getFileHandle('测试文件1', { create: true })
 
-      const contents = "我们都是好孩子我们都是好孩子我们都是好孩子我们都是好孩子我们都是好孩子我们都是好孩子我们都是好孩子我们都是好孩子"
 
-      const writable = await fileHandle.createWritable();
+      const entries = fs.root.entries()
 
-      // Write the contents of the file to the stream.
-      await writable.write(contents);
+      for await (const [key, value] of entries) {
+        console.log({ key, value });
+      }
 
-      // Close the file and write the contents to disk.
-      await writable.close();
+      for await (const key of fs.root.keys()) {
+        console.log("key:", key);
+      }
 
-      const file = await fileHandle.getFile();
 
-      console.log("file", file)
+
+
+      // const contents = "我们都是好孩子我们都是好孩子我们都是好孩子我们都是好孩子我们都是好孩子我们都是好孩子我们都是好孩子我们都是好孩子"
+      // const writable = await fileHandle.createWritable();
+      // // Write the contents of the file to the stream.
+      // await writable.write(contents);
+      // // Close the file and write the contents to disk.
+      // await writable.close();
+      // const file = await fileHandle.getFile();
+      // console.log("file", file)
 
 
 

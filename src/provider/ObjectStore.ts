@@ -23,11 +23,11 @@ export default class ObjectStore<K = IDBValidKey | null, D = any> {
 
     protected toPromise<R = any>(methodName: StoreMethod, ...args: any[]): Promise<R> {
         try {
-            // let success: Function;
-            // if (args.length >= 1 && typeof args[args.length - 1] === 'function') {
-            //     success = args[args.length - 1]
-            //     args = args.slice(0, args.length - 1)
-            // }
+            let success: Function;
+            if (args.length >= 1 && typeof args[args.length - 1] === 'function') {
+                success = args[args.length - 1]
+                args = args.slice(0, args.length - 1)
+            }
 
             return new Promise((resolve, reject) => {
                 // 获得事务
@@ -44,7 +44,7 @@ export default class ObjectStore<K = IDBValidKey | null, D = any> {
                 //游标
                 if (['openCursor', 'openKeyCursor'].indexOf(methodName) >= 0) {
                     req.onsuccess = function (event: any) {
-                        resolve(event)
+                        success(event)
                     }
                     trans.oncomplete = function () {
                         return resolve(undefined as R)
@@ -112,12 +112,12 @@ export default class ObjectStore<K = IDBValidKey | null, D = any> {
         return this.toPromise<IDBIndex>("index", name);
     }
 
-    openCursor(query?: K | IDBKeyRange, direction?: IDBCursorDirection) {
-        return this.toPromise<IDBCursor | null>("openCursor", query, direction);
+    openCursor(query?: K | IDBKeyRange, direction?: IDBCursorDirection, onSuccess?:(ev: Event) => any) {
+        return this.toPromise<IDBCursor | null>("openCursor", query, direction, onSuccess);
     }
 
-    openKeyCursor(query?: K | IDBKeyRange, direction?: IDBCursorDirection) {
-        return this.toPromise<IDBCursor | null>("openKeyCursor", query, direction);
+    openKeyCursor(query?: K | IDBKeyRange, direction?: IDBCursorDirection, onSuccess?:(ev: Event) => any) {
+        return this.toPromise<IDBCursor | null>("openKeyCursor", query, direction, onSuccess);
     }
 
     put(value: D, key?: K) {

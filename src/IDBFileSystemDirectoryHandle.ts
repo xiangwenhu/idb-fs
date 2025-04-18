@@ -1,6 +1,6 @@
 import { NOT_IMPLEMENTED_ERROR } from "./const"
 import { IDBFileSystemHandle } from "./IDBFileSystemHandle"
-import { IDBHandleKind } from "./types"
+import { GetHandleOptions, IDBHandleKind, RemoveEntryOptions } from "./types"
 
 export class IDBFileSystemDirectoryHandle implements IDBFileSystemHandle {
 
@@ -35,7 +35,7 @@ export class IDBFileSystemDirectoryHandle implements IDBFileSystemHandle {
      * @param fileSystemHandle 
      */
     isSameEntry(fileSystemHandle: IDBFileSystemDirectoryHandle): boolean {
-        return this.path === fileSystemHandle.path
+        return this.provider.getDirectoryHandle(this, fileSystemHandle)
     }
 
     /**
@@ -52,7 +52,7 @@ export class IDBFileSystemDirectoryHandle implements IDBFileSystemHandle {
      * 
      */
     entries() {
-        throw NOT_IMPLEMENTED_ERROR
+        return this.provider.entries(this)
     }
 
     /**
@@ -62,9 +62,7 @@ export class IDBFileSystemDirectoryHandle implements IDBFileSystemHandle {
      * @param name 
      * @param options 
      */
-    getDirectoryHandle(name: string, options?: {
-        create?: boolean
-    }) {
+    getDirectoryHandle(name: string, options?: GetHandleOptions) {
         return this.provider.getDirectoryHandle(this, name, options)
     }
 
@@ -76,9 +74,7 @@ export class IDBFileSystemDirectoryHandle implements IDBFileSystemHandle {
      * @param name 
      * @param options 
      */
-    getFileHandle(name: string, options?: {
-        create?: boolean
-    }) {
+    getFileHandle(name: string, options?: GetHandleOptions) {
         return this.provider.getFileHandle(this, name, options)
     }
 
@@ -87,7 +83,7 @@ export class IDBFileSystemDirectoryHandle implements IDBFileSystemHandle {
      * 参考：https://developer.mozilla.org/en-US/docs/Web/API/FileSystemDirectoryHandle/keys
      */
     keys() {
-        throw NOT_IMPLEMENTED_ERROR
+        return this.provider.keys(this)
     }
 
 
@@ -97,10 +93,8 @@ export class IDBFileSystemDirectoryHandle implements IDBFileSystemHandle {
      * @param name 
      * @param options 
      */
-    removeEntry(name: string, options: {
-        recursive: true
-    }) {
-        throw NOT_IMPLEMENTED_ERROR
+    removeEntry(name: string, options: RemoveEntryOptions) {
+        return this.provider.removeEntry(this, name, options)
     }
 
 
@@ -117,7 +111,7 @@ export class IDBFileSystemDirectoryHandle implements IDBFileSystemHandle {
      * 参考：https://developer.mozilla.org/en-US/docs/Web/API/FileSystemDirectoryHandle/values
      */
     values() {
-        throw NOT_IMPLEMENTED_ERROR
+        return this.provider.values(this)
     }
 
 }

@@ -18,7 +18,13 @@ export interface IDBStoreBaseItem {
 
 kind: "file";
 export interface IDBStoreInfoFileItem extends IDBStoreBaseItem {
+    /**
+     * 文件的key
+     */
     fileKey: string;
+    /**
+     * 媒体类型
+     */
     type?: string; // mime type
 }
 
@@ -30,3 +36,12 @@ export interface IDBStoreInfoDirectoryItem extends IDBStoreBaseItem {
 export type IDBStoreInfoItem = IDBStoreInfoFileItem | IDBStoreInfoDirectoryItem;
 
 export type IDBStoreFileItem = Uint8Array;
+
+
+export interface RemoveEntryOptions {
+    recursive?: boolean;
+}
+
+export interface GetHandleOptions { 
+    create?: boolean;    
+}

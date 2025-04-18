@@ -34,7 +34,7 @@ export class IDBFileSystemFileHandle implements IDBFileSystemHandle {
      * @param fileSystemHandle 
      */
     isSameEntry(fileSystemHandle: IDBFileSystemFileHandle): boolean {
-        return this.path === fileSystemHandle.path
+        return  this.provider.isSameEntry(this, fileSystemHandle)
     }
 
     /**

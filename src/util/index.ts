@@ -82,3 +82,31 @@ export function contentToBlob(content: any, type = 'text/plain'): Blob {
 export function uuid(): string {
     return URL.createObjectURL(new Blob([])).split("/").pop()!
 }
+
+/**
+ * 将键值对数组封装为异步迭代器
+ * @param {Array} keyValueArray - 键值对数组
+ * @param {number} delay - 模拟异步延迟（可选）
+ */
+export function createAsyncIterator<V = any>(keyValueArray: V[]) {
+    return {
+        async *[Symbol.asyncIterator]() {
+            for (const item of keyValueArray) {
+                await Promise.resolve(item);
+                yield item; // 返回键值对对象
+            }
+        }
+    };
+}
+
+export function createAsyncIteratorHoc<V = any>(valuesCreator: () => Promise<V[]> | V[]) {
+    return {
+        async *[Symbol.asyncIterator]() {
+            const keyValueArray = await Promise.resolve(valuesCreator())
+            for (const item of keyValueArray) {
+                await Promise.resolve(item);
+                yield item; // 返回键值对对象
+            }
+        }
+    };
+}

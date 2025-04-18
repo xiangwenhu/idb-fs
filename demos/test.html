@@ -20,9 +20,12 @@
     async function showPicker() {
       const dirHandle = await window.showDirectoryPicker();
 
-      for await (const [key, value] of dirHandle.entries()) {
-        console.log({ key, value });
-      }
+      console.log(dirHandle.entries())
+
+
+      // for await (const [key, value] of dirHandle.entries()) {
+      //   console.log({ key, value });
+      // }
 
     }
 
