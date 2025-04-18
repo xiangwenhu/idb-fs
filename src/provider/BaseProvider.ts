@@ -2,31 +2,27 @@ import { IDBFileSystemFileHandleMetaData, IDBFileSystemHandleMetaData, IDBStoreB
 import ObjectStore from "./ObjectStore";
 import { IDBFileSystemFileHandle } from "../IDBFileSystemFileHandle";
 import { IDBFileSystemDirectoryHandle } from "../IDBFileSystemDirectoryHandle";
+import { protectProperty } from "../util/index";
 
 export default class BaseProvider {
-    constructor(
-        protected infoStore: ObjectStore<string, IDBStoreBaseItem>,
-        protected fileStore: ObjectStore<string, IDBStoreFileItem>
-    ) {
 
+    protected infoStore!: ObjectStore<string, IDBStoreBaseItem>;
+    protected fileStore!: ObjectStore<string, IDBStoreFileItem>
+
+    constructor(
+        infoStore: ObjectStore<string, IDBStoreBaseItem>,
+        fileStore: ObjectStore<string, IDBStoreFileItem>
+    ) {
+        protectProperty(this, "infoStore", infoStore);
+        protectProperty(this, "fileStore", fileStore); 
     }
 
     protected setProvider(entry: IDBFileSystemFileHandle | IDBFileSystemDirectoryHandle, provider: BaseProvider = this) {
-        Object.defineProperty(entry, "provider", {
-            enumerable: false,
-            configurable: false,
-            writable: false,
-            value: Object.freeze(provider)
-        })
+        protectProperty(entry, "provider", provider);
     }
 
     protected setMetadata(entry: IDBFileSystemFileHandle | IDBFileSystemDirectoryHandle, metaData: IDBFileSystemHandleMetaData | IDBFileSystemFileHandleMetaData) {
-        Object.defineProperty(entry, "metaData", {
-            enumerable: false,
-            configurable: false,
-            writable: false,
-            value: Object.freeze(metaData)
-        })
+        protectProperty(entry, "metaData", metaData);
     }
 
     getInfoItem(path: string) {

@@ -1,4 +1,13 @@
-import { DIR_SEPARATOR, PathBlackList } from "../const/index"
+import { DIR_SEPARATOR, REG_INVALID_DIRECTORY_NAME, REG_INVALID_FILE_NAME } from "../const/index"
+
+
+export function isObject(obj: any) {
+    return obj !== null && typeof obj === "object";
+}
+
+export function isString(str: any) {
+    return typeof str === "string";
+}
 
 /**
  * https://segmentfault.com/q/1010000007499416
@@ -60,8 +69,40 @@ export function resolveToFullPath(cwdFullPath: string, path: string) {
     return fullPath
 }
 
-export function isValidatedPath(path: string) {
-    return PathBlackList.test(path) ? false : true
+/**
+ * 校验文件名合法性
+ * @param {string} filename - 待校验的文件名
+ * @returns {boolean} 是否合法
+ */
+export function isValidFileName(filename: string): boolean {
+    // 附加规则（
+    return (
+        // 基础正则匹配
+        REG_INVALID_FILE_NAME.test(filename) &&
+        // 长度限制
+        filename.length <= 255 &&
+        // 禁止仅扩展名（如 ".txt"）
+        !/^\.+$/.test(filename) &&
+        // 禁止连续点号（如 "file..txt"）
+        !filename.includes('..')
+    );
+}
+
+/**
+* 校验目录名合法性（兼容 Windows/Linux 系统规则）
+* @param {string} dirname - 待校验的目录名
+* @returns {boolean} 是否合法
+*/
+export function isValidDirectoryName(dirname: string): boolean {
+
+    // 综合校验条件（网页3/5/12）
+    return (
+        REG_INVALID_DIRECTORY_NAME.test(dirname) &&             // 正则匹配
+        dirname.length <= 255 &&                                // 长度限制（
+        !dirname.startsWith('.') &&                             // Linux下避免隐藏目录混淆
+        !dirname.includes('..') &&                               // 防止路径遍历（网页7）
+        !dirname.endsWith(' ')                                   // 结尾禁止空格（网页7）
+    );
 }
 
 export function contentToBlob(content: any, type = 'text/plain'): Blob {
@@ -109,4 +150,31 @@ export function createAsyncIteratorHoc<V = any>(valuesCreator: () => Promise<V[]
             }
         }
     };
+}
+
+export function protectProperty(obj: Object, property: PropertyKey, value: any) {
+    Object.defineProperty(obj, property, {
+        enumerable: false,
+        configurable: false,
+        writable: false,
+        value: isObject(value) ? Object.freeze(value) : value
+    })
+}
+
+export function checkFilename(name: string) {
+    if (!isString(name)) {
+        throw new TypeError("name is not a valid string")
+    }
+    if (!isValidFileName(name)) {
+        throw new TypeError("name contains invalid characters")
+    }
+}
+
+export function checkDirectoryName(name: string) {
+    if (!isString(name)) {
+        throw new TypeError("name is not a valid string")
+    }
+    if (!isValidDirectoryName(name)) {
+        throw new TypeError("name contains invalid characters")
+    }
 }

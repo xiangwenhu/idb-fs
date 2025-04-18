@@ -17,33 +17,44 @@
 
     ; (async function name(params) {
 
-      let fs = await IDBFileSystem.getInstance()
-      let dirHandle = await fs.root.getDirectoryHandle('测试文件夹1', { create: true })
+      let rootDir = await IDBFileSystem.getInstance()
+      let dirHandle = await rootDir.getDirectoryHandle('测试文件夹1', { create: true })
       let fileHandle = await dirHandle.getFileHandle('测试文件1.txt', { create: true })
       let fileHandle2 = await dirHandle.getFileHandle('测试文件2.txt', { create: true })
 
 
-
+      console.log(rootDir)
 
       // resolve
-      dirHandle.resolve(fs.root).then(console.log).catch(console.error)
+      // dirHandle.resolve(rootDir).then(console.log).catch(console.error)
 
 
 
-      // 删除
-      // dirHandle.removeEntry('测试文件1.txt', {
+      // 目录删除
+      // dirHandle.remove({
       //   recursive: true
       // })
 
+      // 目录删除
+      // dirHandle.remove()
+
+      // 文件删除
+      // fileHandle2.remove();
+
+
 
       // 遍历
-      // const entries = fs.root.entries()
-      // for await (const [key, value] of entries) {
-      //   console.log({ key, value });
-      // }
-      // for await (const key of fs.root.keys()) {
-      //   console.log("key:", key);
-      // }
+      const entries = rootDir.entries()
+      for await (const [key, value] of entries) {
+        console.log({ key, value });
+      }
+      for await (const key of rootDir.keys()) {
+        console.log("key:", key);
+      }
+
+        for await (const v of rootDir.values()) {
+        console.log("v:", v);
+      }
 
 
 

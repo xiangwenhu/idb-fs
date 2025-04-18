@@ -1,8 +1,8 @@
 import { IDB_DATABASE_PREFIX, IDB_DEFAULT_DATABASE_NAME, IDB_FILE_STORE_NAME, IDB_INFO_STORE_NAME, NOT_SUPPORTED } from "./const/index";
-import IDBFileSystem from "./IDBFileSystem";
-import StoreProvider from "./provider/index";
+import { DirectoryProvider } from "./provider/DirectoryProvider";
+import FileProvider from "./provider/FileProvider";
 import ObjectStore from "./provider/ObjectStore";
-import { IDBStoreBaseItem, IDBStoreFileItem, IDBStoreInfoItem, InstanceOptions } from "./types";
+import { IDBStoreFileItem, IDBStoreInfoItem, InstanceOptions } from "./types";
 import { getDatabaseWithStore } from "./util/db";
 
 const DefaultOptions: InstanceOptions = {
@@ -25,11 +25,19 @@ export function getInstance(options: InstanceOptions = DefaultOptions) {
     const fileStoreName = IDB_FILE_STORE_NAME;
 
     return getDatabaseWithStore(1.0, fullDBName, [infoStoreName, fileStoreName])
-        .then(db =>  {
-            const infoStore = new ObjectStore<string, IDBStoreInfoItem>(db, {storeName: infoStoreName});
-            const fileStore = new ObjectStore<string, IDBStoreFileItem>(db, {storeName: fileStoreName});
-            const storeProvider = new StoreProvider(infoStore, fileStore);
-            return new IDBFileSystem(storeProvider);            
+        .then(db => {
+
+            // 初始化Store
+            const infoStore = new ObjectStore<string, IDBStoreInfoItem>(db, { storeName: infoStoreName });
+            const fileStore = new ObjectStore<string, IDBStoreFileItem>(db, { storeName: fileStoreName });
+
+            // 初始化Provider
+            const fileProvider = new FileProvider(infoStore, fileStore);
+            const directoryProvider = new DirectoryProvider(infoStore, fileStore, fileProvider);
+
+            // 初始化根目录
+            const rootDirectory = directoryProvider.createDirectoryHandle("/", "/");
+            return rootDirectory;
         })
 }
 

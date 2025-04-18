@@ -1,25 +1,29 @@
-import { IDBFileSystemFileHandle } from "../IDBFileSystemFileHandle";
+import { createDOMException } from "src/util/error";
 import { IDBFileSystemDirectoryHandle } from "../IDBFileSystemDirectoryHandle";
-import { GetHandleOptions, IDBStoreBaseItem, IDBStoreFileItem, IDBStoreInfoDirectoryItem, IDBStoreInfoFileItem, RemoveEntryOptions } from "../types";
-import BaseProvider from "./BaseProvider";
-import ObjectStore from "./ObjectStore";
-import { createAsyncIterator, createAsyncIteratorHoc, resolveToFullPath, uuid } from "../util/index";
-import FileProvider from "./FileProvider";
+import { IDBFileSystemFileHandle } from "../IDBFileSystemFileHandle";
 import { IDBFileSystemHandle } from "../IDBFileSystemHandle";
 import { DIR_OPEN_BOUND, DIR_SEPARATOR } from "../const/index";
-import { createDOMException } from "src/util/error";
+import { GetHandleOptions, IDBStoreBaseItem, IDBStoreFileItem, IDBStoreInfoDirectoryItem, IDBStoreInfoFileItem, RemoveEntryOptions } from "../types";
+import { checkFilename, createAsyncIteratorHoc, isString, isValidDirectoryName, isValidFileName, protectProperty, resolveToFullPath, uuid } from "../util/index";
+import BaseProvider from "./BaseProvider";
+import FileProvider from "./FileProvider";
+import ObjectStore from "./ObjectStore";
 
 export class DirectoryProvider extends BaseProvider {
+
+    protected fileProvider!: FileProvider
+
     constructor(
-        protected infoStore: ObjectStore<string, IDBStoreInfoFileItem | IDBStoreInfoDirectoryItem>,
-        protected fileStore: ObjectStore<string, IDBStoreFileItem>,
-        protected fileProvider: FileProvider
+        infoStore: ObjectStore<string, IDBStoreInfoFileItem | IDBStoreInfoDirectoryItem>,
+        fileStore: ObjectStore<string, IDBStoreFileItem>,
+        fileProvider: FileProvider
     ) {
         super(infoStore, fileStore)
+        protectProperty(this, "fileProvider", fileProvider)
     }
 
 
-    public toDirectoryHandle(info: IDBStoreBaseItem | string, fullPath: string) {
+    public createDirectoryHandle(info: IDBStoreBaseItem | string, fullPath: string) {
         const name = typeof info == "string" ? info : info.name;
         const handle = new IDBFileSystemDirectoryHandle(name);
         this.setMetadata(handle, { path: fullPath })
@@ -28,7 +32,7 @@ export class DirectoryProvider extends BaseProvider {
     }
 
     // 定义一个私有方法 toFileHandle，用于将给定的信息对象或字符串转换为文件句柄
-    private toFileHandle(info: IDBStoreInfoFileItem, fullPath: string) {
+    private createFileHandle(info: IDBStoreInfoFileItem, fullPath: string) {
         // 根据 info 的类型确定文件名
         // 如果 info 是字符串类型，则直接使用该字符串作为文件名
         // 如果 info 是对象类型，则使用对象的 name 属性作为文件名
@@ -162,7 +166,7 @@ export class DirectoryProvider extends BaseProvider {
 
         const getData = (key: string, item: IDBStoreBaseItem) => {
             const subHandleKey = resolveToFullPath(handle.metaData.path, key);
-            const subHandle = item.kind == "directory" ? this.toDirectoryHandle(item, subHandleKey) : this.toFileHandle(item as IDBStoreInfoFileItem, subHandleKey);
+            const subHandle = item.kind == "directory" ? this.createDirectoryHandle(item, subHandleKey) : this.createFileHandle(item as IDBStoreInfoFileItem, subHandleKey);
             return [subHandleKey, subHandle] as [string, IDBFileSystemDirectoryHandle | IDBFileSystemFileHandle]
         }
 
@@ -174,15 +178,20 @@ export class DirectoryProvider extends BaseProvider {
     }
 
     entries(handle: IDBFileSystemDirectoryHandle) {
+        const info = this.getInfoItem(handle.metaData.path);
+        if (!info) throw createDOMException(DOMException.NOT_FOUND_ERR);
         return createAsyncIteratorHoc(() => this.subEntries(handle))
     }
 
     async getDirectoryHandle(directory: IDBFileSystemDirectoryHandle, name: string, options?: GetHandleOptions) {
+
+        checkFilename(name);
+
         const fullPath = resolveToFullPath(directory.metaData.path, name);
         const dir = await this.getInfoItem(fullPath);
 
         if (dir) {
-            if (dir.kind == "directory") return this.toDirectoryHandle(dir, fullPath);
+            if (dir.kind == "directory") return this.createDirectoryHandle(dir, fullPath);
             throw createDOMException(DOMException.TYPE_MISMATCH_ERR);
         }
 
@@ -199,18 +208,20 @@ export class DirectoryProvider extends BaseProvider {
             lastModifiedTime: time,
         }, fullPath);
 
-        const handle = this.toDirectoryHandle(name, fullPath)
+        const handle = this.createDirectoryHandle(name, fullPath)
 
         return handle
 
     }
 
     async getFileHandle(directory: IDBFileSystemDirectoryHandle, name: string, options?: GetHandleOptions) {
+        checkFilename(name);
+
         const fullPath = resolveToFullPath(directory.metaData.path, name);
         const info = await this.getInfoItem(fullPath);
 
         if (info) {
-            if (info.kind == "file") return this.toFileHandle(info as IDBStoreInfoFileItem, fullPath);
+            if (info.kind == "file") return this.createFileHandle(info as IDBStoreInfoFileItem, fullPath);
             throw createDOMException(DOMException.TYPE_MISMATCH_ERR);
         }
 
@@ -234,16 +245,26 @@ export class DirectoryProvider extends BaseProvider {
 
         await this.fileStore.add(new Uint8Array(), fileKey);
 
-        const handle = this.toFileHandle(fileInfo, fullPath)
+        const handle = this.createFileHandle(fileInfo, fullPath)
 
         return handle
     }
 
     keys(handle: IDBFileSystemDirectoryHandle) {
+        const info = this.getInfoItem(handle.metaData.path);
+        if (!info) throw createDOMException(DOMException.NOT_FOUND_ERR);
         return createAsyncIteratorHoc(() => this.subEntries(handle).then((entries) => entries.map((entry) => entry[0])))
     }
 
     async removeEntry(handle: IDBFileSystemDirectoryHandle, name: string, options: RemoveEntryOptions) {
+        if (!isString(name)) {
+            throw new TypeError("name is not a valid string")
+        }
+
+        if (!isValidFileName(name) && !isValidDirectoryName(name)) {
+            throw new TypeError("name contains invalid characters")
+        }
+
         const { metaData } = handle;
 
         const subPath = resolveToFullPath(metaData.path, name);
@@ -269,6 +290,12 @@ export class DirectoryProvider extends BaseProvider {
         const path2 = handle2.metaData.path;
         if (path2.indexOf(path1) < 0) return null;
         return path2.substring(path1.length).split(DIR_SEPARATOR);
+    }
+
+    values(handle: IDBFileSystemDirectoryHandle) {
+        const info = this.getInfoItem(handle.metaData.path);
+        if (!info) throw createDOMException(DOMException.NOT_FOUND_ERR);
+        return createAsyncIteratorHoc(() => this.subEntries(handle).then((entries) => entries.map((entry) => entry[1])))
     }
 
 }

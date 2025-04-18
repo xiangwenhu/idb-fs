@@ -1,15 +1,19 @@
 import { IDBFileSystemHandle } from "./IDBFileSystemHandle"
 import { IDBFileSystemFileHandleMetaData, IDBHandleKind } from "./types"
+import { protectProperty } from "./util/index";
 
 export class IDBFileSystemFileHandle implements IDBFileSystemHandle {
 
     // @ts-ignore provider的信息，会通过 Object.defineProperty 挂载
     protected provider: any!;
 
+    protected filename!: string;
+
     // @ts-ignore 文件一些原始数据， 会通过 Object.defineProperty 挂载
     metaData: IDBFileSystemFileHandleMetaData;
 
-    constructor(private filename: string) {
+    constructor(filename: string) {
+        protectProperty(this, "filename", filename)
     }
 
     /**

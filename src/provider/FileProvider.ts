@@ -7,8 +7,8 @@ import { createDOMException } from "src/util/error";
 
 export default class FileProvider extends BaseProvider {
     constructor(
-        protected infoStore: ObjectStore<string, IDBStoreBaseItem>,
-        protected fileStore: ObjectStore<string, IDBStoreFileItem>
+        infoStore: ObjectStore<string, IDBStoreBaseItem>,
+        fileStore: ObjectStore<string, IDBStoreFileItem>
     ) {
         super(infoStore, fileStore)
     }
