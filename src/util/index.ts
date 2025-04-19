@@ -1,32 +1,11 @@
 import { DIR_SEPARATOR, REG_INVALID_DIRECTORY_NAME, REG_INVALID_FILE_NAME } from "../const/index"
 
-
 export function isObject(obj: any) {
     return obj !== null && typeof obj === "object";
 }
 
 export function isString(str: any) {
     return typeof str === "string";
-}
-
-/**
- * https://segmentfault.com/q/1010000007499416
- * Promise for forEach
- * @param {*数组} arr 
- * @param {*回调} cb(val)返回的应该是Promise 
- * @param {*是否需要执行结果集} needResults
- */
-export function promiseForEach(arr: any[], cb: Function, needResults: boolean) {
-    const result: any[] = []
-    let p = Promise.resolve()
-    Array.from(arr).forEach((val, index) => {
-        p = p.then(() => {
-            return cb(val, index).then((res: any) => {
-                needResults && result.push(res)
-            })
-        })
-    })
-    return needResults ? p.then(() => result) : p
 }
 
 
@@ -103,21 +82,6 @@ export function isValidDirectoryName(dirname: string): boolean {
         !dirname.includes('..') &&                               // 防止路径遍历（网页7）
         !dirname.endsWith(' ')                                   // 结尾禁止空格（网页7）
     );
-}
-
-export function contentToBlob(content: any, type = 'text/plain'): Blob {
-    let blob
-    // 不是blob，转为blob
-    if (content instanceof Blob) {
-        blob = content
-    } else if (content instanceof ArrayBuffer) {
-        blob = new Blob([new Uint8Array(content)], { type })
-    } else if (typeof content === 'string') {
-        blob = new Blob([content], { type: 'text/plain' })
-    } else {
-        blob = new Blob([content], { type })
-    }
-    return blob
 }
 
 export function uuid(): string {

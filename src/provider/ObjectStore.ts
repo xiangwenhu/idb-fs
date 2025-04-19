@@ -1,5 +1,5 @@
 
-interface Options {
+interface ObjectStoreOptions {
     storeName: string;
 }
 
@@ -9,7 +9,7 @@ type StoreMethod = "add" | "clear" | "count" | "createIndex" | "delete" | "delet
 
 export default class ObjectStore<K = IDBValidKey | null, D = any> {
 
-    constructor(protected db: IDBDatabase, protected options: Options) {
+    constructor(protected db: IDBDatabase, protected options: ObjectStoreOptions) {
     }
 
     private get storeName() {

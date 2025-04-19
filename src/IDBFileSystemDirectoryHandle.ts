@@ -1,16 +1,17 @@
 import { IDBFileSystemHandle } from "./IDBFileSystemHandle"
-import { GetHandleOptions, IDBFileSystemHandleMetaData, IDBHandleKind, RemoveEntryOptions } from "./types"
+import { GetHandleOptions, FileSystemHandleMetaData, HandleKind, RemoveEntryOptions } from "./types/index"
 import { protectProperty } from "./util/index";
 
 export class IDBFileSystemDirectoryHandle implements IDBFileSystemHandle {
 
-    // @ts-ignore
-    protected provider: any!;
+    // provider的信息，会通过 Object.defineProperty 挂载
+    protected provider!: any;
 
+    // 目录名，会通过 Object.defineProperty 挂载
     protected directoryName!: string;
 
-    // @ts-ignore 文件一些原始数据， 会通过 Object.defineProperty 挂载
-    metaData: IDBFileSystemHandleMetaData;
+    // 文件一些原始数据， 会通过 Object.defineProperty 挂载
+    metaData!: FileSystemHandleMetaData;
 
     constructor(directoryName: string) {
         protectProperty(this, "directoryName", directoryName)
@@ -20,7 +21,7 @@ export class IDBFileSystemDirectoryHandle implements IDBFileSystemHandle {
      * 类型
      * 参考：https://developer.mozilla.org/en-US/docs/Web/API/FileSystemHandle/kind
      */
-    get kind(): IDBHandleKind {
+    get kind(): HandleKind {
         return "directory"
     }
 
@@ -37,8 +38,8 @@ export class IDBFileSystemDirectoryHandle implements IDBFileSystemHandle {
      * 参考：https://developer.mozilla.org/en-US/docs/Web/API/FileSystemHandle/isSameEntry
      * @param fileSystemHandle 
      */
-    isSameEntry(fileSystemHandle: IDBFileSystemDirectoryHandle): boolean {
-        return this.provider.getDirectoryHandle(this, fileSystemHandle)
+    isSameEntry(fileSystemHandle: IDBFileSystemHandle) {
+        return this.provider.isSameEntry(this, fileSystemHandle)
     }
 
     /**

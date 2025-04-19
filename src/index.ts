@@ -2,7 +2,7 @@ import { IDB_DATABASE_PREFIX, IDB_DEFAULT_DATABASE_NAME, IDB_FILE_STORE_NAME, ID
 import { DirectoryProvider } from "./provider/DirectoryProvider";
 import FileProvider from "./provider/FileProvider";
 import ObjectStore from "./provider/ObjectStore";
-import { IDBStoreFileItem, IDBStoreInfoItem, InstanceOptions } from "./types";
+import { StoreFileItem, StoreInfoItem, InstanceOptions } from "./types/index";
 import { getDatabaseWithStore } from "./util/db";
 
 const DefaultOptions: InstanceOptions = {
@@ -28,8 +28,8 @@ export function getInstance(options: InstanceOptions = DefaultOptions) {
         .then(db => {
 
             // 初始化Store
-            const infoStore = new ObjectStore<string, IDBStoreInfoItem>(db, { storeName: infoStoreName });
-            const fileStore = new ObjectStore<string, IDBStoreFileItem>(db, { storeName: fileStoreName });
+            const infoStore = new ObjectStore<string, StoreInfoItem>(db, { storeName: infoStoreName });
+            const fileStore = new ObjectStore<string, StoreFileItem>(db, { storeName: fileStoreName });
 
             // 初始化Provider
             const fileProvider = new FileProvider(infoStore, fileStore);

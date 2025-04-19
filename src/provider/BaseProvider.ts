@@ -1,4 +1,4 @@
-import { IDBFileSystemFileHandleMetaData, IDBFileSystemHandleMetaData, IDBStoreBaseItem, IDBStoreFileItem, IDBStoreInfoFileItem } from "../types";
+import { FileSystemFileHandleMetaData, FileSystemHandleMetaData, StoreInfoBaseItem, StoreFileItem, StoreInfoFileItem } from "../types/index";
 import ObjectStore from "./ObjectStore";
 import { IDBFileSystemFileHandle } from "../IDBFileSystemFileHandle";
 import { IDBFileSystemDirectoryHandle } from "../IDBFileSystemDirectoryHandle";
@@ -6,12 +6,12 @@ import { protectProperty } from "../util/index";
 
 export default class BaseProvider {
 
-    protected infoStore!: ObjectStore<string, IDBStoreBaseItem>;
-    protected fileStore!: ObjectStore<string, IDBStoreFileItem>
+    protected infoStore!: ObjectStore<string, StoreInfoBaseItem>;
+    protected fileStore!: ObjectStore<string, StoreFileItem>
 
     constructor(
-        infoStore: ObjectStore<string, IDBStoreBaseItem>,
-        fileStore: ObjectStore<string, IDBStoreFileItem>
+        infoStore: ObjectStore<string, StoreInfoBaseItem>,
+        fileStore: ObjectStore<string, StoreFileItem>
     ) {
         protectProperty(this, "infoStore", infoStore);
         protectProperty(this, "fileStore", fileStore); 
@@ -21,7 +21,7 @@ export default class BaseProvider {
         protectProperty(entry, "provider", provider);
     }
 
-    protected setMetadata(entry: IDBFileSystemFileHandle | IDBFileSystemDirectoryHandle, metaData: IDBFileSystemHandleMetaData | IDBFileSystemFileHandleMetaData) {
+    protected setMetadata(entry: IDBFileSystemFileHandle | IDBFileSystemDirectoryHandle, metaData: FileSystemHandleMetaData | FileSystemFileHandleMetaData) {
         protectProperty(entry, "metaData", metaData);
     }
 

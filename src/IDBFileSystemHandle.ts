@@ -1,13 +1,13 @@
-import { IDBFileSystemFileHandleMetaData, IDBFileSystemHandleMetaData, IDBHandleKind } from "./types";
+import { FileSystemFileHandleMetaData, FileSystemHandleMetaData, HandleKind } from "./types/index";
 
 export interface IDBFileSystemHandle {
-    readonly kind: IDBHandleKind;
+    readonly kind: HandleKind;
     readonly name: string;
-    isSameEntry(fileSystemHandle: IDBFileSystemHandle): boolean;
+    isSameEntry(fileSystemHandle: IDBFileSystemHandle): Promise<boolean>;
     remove(options?: { recursive?: boolean }): Promise<undefined>;
 
     // 自定义的
-    readonly metaData: IDBFileSystemHandleMetaData
+    readonly metaData: FileSystemHandleMetaData
 }
 
 

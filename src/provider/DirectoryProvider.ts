@@ -3,7 +3,7 @@ import { IDBFileSystemDirectoryHandle } from "../IDBFileSystemDirectoryHandle";
 import { IDBFileSystemFileHandle } from "../IDBFileSystemFileHandle";
 import { IDBFileSystemHandle } from "../IDBFileSystemHandle";
 import { DIR_OPEN_BOUND, DIR_SEPARATOR } from "../const/index";
-import { GetHandleOptions, IDBStoreBaseItem, IDBStoreFileItem, IDBStoreInfoDirectoryItem, IDBStoreInfoFileItem, RemoveEntryOptions } from "../types";
+import { GetHandleOptions, StoreInfoBaseItem, StoreFileItem, StoreInfoDirectoryItem, StoreInfoFileItem, RemoveEntryOptions } from "../types/index";
 import { checkFilename, createAsyncIteratorHoc, isString, isValidDirectoryName, isValidFileName, protectProperty, resolveToFullPath, uuid } from "../util/index";
 import BaseProvider from "./BaseProvider";
 import FileProvider from "./FileProvider";
@@ -14,8 +14,8 @@ export class DirectoryProvider extends BaseProvider {
     protected fileProvider!: FileProvider
 
     constructor(
-        infoStore: ObjectStore<string, IDBStoreInfoFileItem | IDBStoreInfoDirectoryItem>,
-        fileStore: ObjectStore<string, IDBStoreFileItem>,
+        infoStore: ObjectStore<string, StoreInfoFileItem | StoreInfoDirectoryItem>,
+        fileStore: ObjectStore<string, StoreFileItem>,
         fileProvider: FileProvider
     ) {
         super(infoStore, fileStore)
@@ -23,7 +23,7 @@ export class DirectoryProvider extends BaseProvider {
     }
 
 
-    public createDirectoryHandle(info: IDBStoreBaseItem | string, fullPath: string) {
+    public createDirectoryHandle(info: StoreInfoBaseItem | string, fullPath: string) {
         const name = typeof info == "string" ? info : info.name;
         const handle = new IDBFileSystemDirectoryHandle(name);
         this.setMetadata(handle, { path: fullPath })
@@ -32,7 +32,7 @@ export class DirectoryProvider extends BaseProvider {
     }
 
     // 定义一个私有方法 toFileHandle，用于将给定的信息对象或字符串转换为文件句柄
-    private createFileHandle(info: IDBStoreInfoFileItem, fullPath: string) {
+    private createFileHandle(info: StoreInfoFileItem, fullPath: string) {
         // 根据 info 的类型确定文件名
         // 如果 info 是字符串类型，则直接使用该字符串作为文件名
         // 如果 info 是对象类型，则使用对象的 name 属性作为文件名
@@ -85,8 +85,8 @@ export class DirectoryProvider extends BaseProvider {
 
 
     private querySubEntries<D = any>(range: IDBKeyRange | undefined,
-        filter: (key: string, item: IDBStoreBaseItem) => boolean,
-        getData: (key: string, item: IDBStoreBaseItem) => D) {
+        filter: (key: string, item: StoreInfoBaseItem) => boolean,
+        getData: (key: string, item: StoreInfoBaseItem) => D) {
 
         const entries: D[] = []
 
@@ -94,7 +94,7 @@ export class DirectoryProvider extends BaseProvider {
             const cursor: IDBCursorWithValue = event.target.result;
             if (cursor) {
                 const key: string = cursor.key as string;
-                const item: IDBStoreBaseItem = cursor.value;
+                const item: StoreInfoBaseItem = cursor.value;
 
                 const isValid = filter(key, item);
                 if (isValid) {
@@ -151,7 +151,7 @@ export class DirectoryProvider extends BaseProvider {
 
         const filter = options?.recursive === true ? (_key: any, _item: any) => {
             return true
-        } : (key: string, _item: IDBStoreBaseItem) => {
+        } : (key: string, _item: StoreInfoBaseItem) => {
             valPartsLen = key.split(DIR_SEPARATOR).length
             fullPathPartsLen = handle.metaData.path.split(DIR_SEPARATOR).length
             if (key !== DIR_SEPARATOR) {
@@ -164,9 +164,9 @@ export class DirectoryProvider extends BaseProvider {
             return false
         }
 
-        const getData = (key: string, item: IDBStoreBaseItem) => {
+        const getData = (key: string, item: StoreInfoBaseItem) => {
             const subHandleKey = resolveToFullPath(handle.metaData.path, key);
-            const subHandle = item.kind == "directory" ? this.createDirectoryHandle(item, subHandleKey) : this.createFileHandle(item as IDBStoreInfoFileItem, subHandleKey);
+            const subHandle = item.kind == "directory" ? this.createDirectoryHandle(item, subHandleKey) : this.createFileHandle(item as StoreInfoFileItem, subHandleKey);
             return [subHandleKey, subHandle] as [string, IDBFileSystemDirectoryHandle | IDBFileSystemFileHandle]
         }
 
@@ -221,7 +221,7 @@ export class DirectoryProvider extends BaseProvider {
         const info = await this.getInfoItem(fullPath);
 
         if (info) {
-            if (info.kind == "file") return this.createFileHandle(info as IDBStoreInfoFileItem, fullPath);
+            if (info.kind == "file") return this.createFileHandle(info as StoreInfoFileItem, fullPath);
             throw createDOMException(DOMException.TYPE_MISMATCH_ERR);
         }
 
@@ -233,7 +233,7 @@ export class DirectoryProvider extends BaseProvider {
 
         const fileKey = uuid();
 
-        const fileInfo: IDBStoreInfoFileItem = {
+        const fileInfo: StoreInfoFileItem = {
             kind: "file",
             name,
             createTime: time,
@@ -274,7 +274,7 @@ export class DirectoryProvider extends BaseProvider {
 
         // 删除文件
         if (info.kind == "file") {
-            await this.fileStore.delete((info as IDBStoreInfoFileItem).fileKey);
+            await this.fileStore.delete((info as StoreInfoFileItem).fileKey);
             await this.infoStore.delete(subPath);
             return undefined;
         }

@@ -1,19 +1,20 @@
-import { IDBStoreBaseItem, IDBStoreFileItem, IDBStoreInfoFileItem } from "../types";
+import { StoreInfoBaseItem, StoreFileItem, StoreInfoFileItem } from "../types/index";
 import ObjectStore from "./ObjectStore";
 import { IDBFileSystemFileHandle } from "../IDBFileSystemFileHandle";
 import Uint8ArrayWritableStream from "../Uint8ArrayWritableStream";
 import BaseProvider from "./BaseProvider";
-import { createDOMException } from "src/util/error";
+import { createDOMException } from "../util/error";
+import { IDBFileSystemHandle } from "../IDBFileSystemHandle";
 
 export default class FileProvider extends BaseProvider {
     constructor(
-        infoStore: ObjectStore<string, IDBStoreBaseItem>,
-        fileStore: ObjectStore<string, IDBStoreFileItem>
+        infoStore: ObjectStore<string, StoreInfoBaseItem>,
+        fileStore: ObjectStore<string, StoreFileItem>
     ) {
         super(infoStore, fileStore)
     }
 
-    async isSameEntry(handle1: IDBFileSystemFileHandle, handle2: IDBFileSystemFileHandle) {
+    async isSameEntry(handle1: IDBFileSystemHandle, handle2: IDBFileSystemHandle) {
         if (handle1.kind !== 'file' || handle2.kind !== 'file') {
             return false
         }
@@ -21,8 +22,8 @@ export default class FileProvider extends BaseProvider {
             return false
         }
 
-        const handle1Info = (await this.getInfoItem(handle1.metaData.path)) as IDBStoreInfoFileItem;
-        const handle2Info = (await this.getInfoItem(handle2.metaData.path)) as IDBStoreInfoFileItem;
+        const handle1Info = (await this.getInfoItem(handle1.metaData.path)) as StoreInfoFileItem;
+        const handle2Info = (await this.getInfoItem(handle2.metaData.path)) as StoreInfoFileItem;
 
         if (!handle1Info || !handle2Info) {
             return false
@@ -33,7 +34,7 @@ export default class FileProvider extends BaseProvider {
     }
 
     async getFile(fileHandle: IDBFileSystemFileHandle) {
-        const info: IDBStoreBaseItem | undefined = await this.infoStore.get(fileHandle.metaData.path);
+        const info: StoreInfoBaseItem | undefined = await this.infoStore.get(fileHandle.metaData.path);
         if (!info) {
             throw createDOMException(DOMException.NOT_FOUND_ERR);
         }
@@ -41,7 +42,7 @@ export default class FileProvider extends BaseProvider {
             throw createDOMException(DOMException.TYPE_MISMATCH_ERR);
         }
 
-        const fileInfo = info as IDBStoreInfoFileItem;
+        const fileInfo = info as StoreInfoFileItem;
         const data = await this.getFileItem(fileInfo.fileKey);
         if (!data) {
             // 未找到实际的文件，删除
@@ -61,7 +62,7 @@ export default class FileProvider extends BaseProvider {
         const writableStream = new Uint8ArrayWritableStream(new Uint8Array(buffer));
 
         writableStream.addEventListener("close", async () => {
-            const info: IDBStoreInfoFileItem = (await this.infoStore.get(fileHandle.metaData.path)) as IDBStoreInfoFileItem;
+            const info: StoreInfoFileItem = (await this.infoStore.get(fileHandle.metaData.path)) as StoreInfoFileItem;
             this.fileStore.put(writableStream.getResult(), info.fileKey);
         }, {
             once: true
@@ -71,11 +72,11 @@ export default class FileProvider extends BaseProvider {
     }
 
     async remove(fileHandle: IDBFileSystemFileHandle) {
-        const info: IDBStoreBaseItem | undefined = await this.infoStore.get(fileHandle.metaData.path);
+        const info: StoreInfoBaseItem | undefined = await this.infoStore.get(fileHandle.metaData.path);
         if (!info) {
             throw createDOMException(DOMException.NOT_FOUND_ERR);
         }
-        const fileInfo = info as IDBStoreInfoFileItem;
+        const fileInfo = info as StoreInfoFileItem;
 
         await this.infoStore.delete(fileHandle.metaData.path);
         await this.fileStore.delete(fileInfo.fileKey);
