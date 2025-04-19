@@ -117,5 +117,4 @@ export class IDBFileSystemDirectoryHandle implements IDBFileSystemHandle {
     values() {
         return this.provider.values(this)
     }
-
 }

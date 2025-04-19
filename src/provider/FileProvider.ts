@@ -14,6 +14,7 @@ export default class FileProvider extends BaseProvider {
         super(infoStore, fileStore)
     }
 
+
     async isSameEntry(handle1: IDBFileSystemHandle, handle2: IDBFileSystemHandle) {
         if (handle1.kind !== 'file' || handle2.kind !== 'file') {
             return false
@@ -35,12 +36,7 @@ export default class FileProvider extends BaseProvider {
 
     async getFile(fileHandle: IDBFileSystemFileHandle) {
         const info: StoreInfoBaseItem | undefined = await this.infoStore.get(fileHandle.metaData.path);
-        if (!info) {
-            throw createDOMException(DOMException.NOT_FOUND_ERR);
-        }
-        if (info.kind !== 'file') {
-            throw createDOMException(DOMException.TYPE_MISMATCH_ERR);
-        }
+        this.checkFileInfo(info);
 
         const fileInfo = info as StoreInfoFileItem;
         const data = await this.getFileItem(fileInfo.fileKey);
@@ -59,29 +55,25 @@ export default class FileProvider extends BaseProvider {
     async createWritable(fileHandle: IDBFileSystemFileHandle) {
         const file = await this.getFile(fileHandle);
         const buffer = await file.arrayBuffer();
-        const writableStream = new Uint8ArrayWritableStream(new Uint8Array(buffer));
-
-        writableStream.addEventListener("close", async () => {
-            const info: StoreInfoFileItem = (await this.infoStore.get(fileHandle.metaData.path)) as StoreInfoFileItem;
-            this.fileStore.put(writableStream.getResult(), info.fileKey);
-        }, {
-            once: true
-        })
+        const writableStream = new Uint8ArrayWritableStream(new Uint8Array(buffer), {
+            onClose: async () => {
+                const info: StoreInfoFileItem = (await this.infoStore.get(fileHandle.metaData.path)) as StoreInfoFileItem;
+                this.fileStore.put(writableStream.getResult(), info.fileKey);
+            },
+        });
 
         return writableStream.getWriter()
     }
 
     async remove(fileHandle: IDBFileSystemFileHandle) {
         const info: StoreInfoBaseItem | undefined = await this.infoStore.get(fileHandle.metaData.path);
-        if (!info) {
-            throw createDOMException(DOMException.NOT_FOUND_ERR);
-        }
+        this.checkFileInfo(info);
         const fileInfo = info as StoreInfoFileItem;
 
         await this.infoStore.delete(fileHandle.metaData.path);
         await this.fileStore.delete(fileInfo.fileKey);
 
         return undefined
-
     }
+
 }

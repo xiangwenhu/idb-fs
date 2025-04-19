@@ -1,4 +1,4 @@
-import { FileSystemFileHandleMetaData, FileSystemHandleMetaData, HandleKind } from "./types/index";
+import { FileSystemHandleMetaData, HandleKind } from "./types/index";
 
 export interface IDBFileSystemHandle {
     readonly kind: HandleKind;

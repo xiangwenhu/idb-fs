@@ -289,7 +289,7 @@ export class DirectoryProvider extends BaseProvider {
         const path1 = handle.metaData.path;
         const path2 = handle2.metaData.path;
         if (path2.indexOf(path1) < 0) return null;
-        return path2.substring(path1.length).split(DIR_SEPARATOR);
+        return path2.substring(path1.length).split(DIR_SEPARATOR).filter(Boolean);
     }
 
     values(handle: IDBFileSystemDirectoryHandle) {
@@ -297,5 +297,4 @@ export class DirectoryProvider extends BaseProvider {
         if (!info) throw createDOMException(DOMException.NOT_FOUND_ERR);
         return createAsyncIteratorHoc(() => this.subEntries(handle).then((entries) => entries.map((entry) => entry[1])))
     }
-
 }

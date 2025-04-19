@@ -3,6 +3,7 @@ import ObjectStore from "./ObjectStore";
 import { IDBFileSystemFileHandle } from "../IDBFileSystemFileHandle";
 import { IDBFileSystemDirectoryHandle } from "../IDBFileSystemDirectoryHandle";
 import { protectProperty } from "../util/index";
+import { createDOMException } from "../util/error";
 
 export default class BaseProvider {
 
@@ -14,7 +15,7 @@ export default class BaseProvider {
         fileStore: ObjectStore<string, StoreFileItem>
     ) {
         protectProperty(this, "infoStore", infoStore);
-        protectProperty(this, "fileStore", fileStore); 
+        protectProperty(this, "fileStore", fileStore);
     }
 
     protected setProvider(entry: IDBFileSystemFileHandle | IDBFileSystemDirectoryHandle, provider: BaseProvider = this) {
@@ -31,6 +32,24 @@ export default class BaseProvider {
 
     getFileItem(fileKey: string) {
         return this.fileStore.get(fileKey);
+    }
+
+    protected checkFileInfo(info: StoreInfoBaseItem | undefined) {
+        if (!info) {
+            throw createDOMException(DOMException.NOT_FOUND_ERR);
+        }
+        if (info.kind !== 'file') {
+            throw createDOMException(DOMException.TYPE_MISMATCH_ERR);
+        }
+    }
+
+    protected checkDirectoryInfo(info: StoreInfoBaseItem | undefined) {
+        if (!info) {
+            throw createDOMException(DOMException.NOT_FOUND_ERR);
+        }
+        if (info.kind !== 'directory') {
+            throw createDOMException(DOMException.TYPE_MISMATCH_ERR);
+        }
     }
 
 }

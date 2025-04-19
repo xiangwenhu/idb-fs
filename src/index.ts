@@ -41,3 +41,6 @@ export function getInstance(options: InstanceOptions = DefaultOptions) {
         })
 }
 
+export { InstanceOptions } from "./types/index";
+export { IDBFileSystemDirectoryHandle } from "./IDBFileSystemDirectoryHandle"
+export { IDBFileSystemFileHandle } from "./IDBFileSystemFileHandle"

@@ -5,27 +5,47 @@ type WriteCommand = {
     size?: number;
 };
 
+interface Uint8ArrayWritableStreamOptions {
+    onClose?(): Promise<void>;
+    onStart?(): Promise<any>;
+    onAbort?(): Promise<void>;
+    onWrite?(): Promise<void>
+}
+
 export default class Uint8ArrayWritableStream extends WritableStream<Blob | ArrayBuffer | string | WriteCommand> {
 
     private cursor = 0;
     private closed = false;
     private eventTarget = new EventTarget(); // 事件派发器
 
-    constructor(private buffer: Uint8Array) {
+    constructor(private buffer: Uint8Array, private options?: Uint8ArrayWritableStreamOptions) {
 
         const sink: UnderlyingSink = {
-            start() {
+            start: async () => {
+                if (options?.onStart) {
+                    await options.onStart();
+                }
                 return true; // 等待初始化完成
             },
             write: async (chunk) => {
                 if (this.closed) throw new DOMException("Stream closed", "InvalidStateError");
+                if (this.options?.onWrite) {
+                    await this.options.onWrite();
+                }
                 await this.processChunk(chunk);
             },
-            close: () => {
+            close: async () => {
+                if (options?.onClose) {
+                    await options.onClose();
+                }
+
                 this.closed = true;
                 this.dispatchCloseEvent();
             },
-            abort: (reason) => {
+            abort: async (reason) => {
+                if (this.options?.onAbort) {
+                    await this.options.onAbort();
+                }
                 this.closed = true;
                 console.error("Aborted:", reason);
             }
