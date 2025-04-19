@@ -1,19 +1,39 @@
+# idb-fs-test
 
-# 基于indexedDB和promise的文件系统
+This template should help get you started developing with Vue 3 in Vite.
 
-## TODO::
-* [ ] 分离基础数据和二进制文件
+## Recommended IDE Setup
 
-## 如何使用
-```javascript
-    window.onload = async function () {
-        let fs = await FileSystem.getInstance()           
-        let dir = await fs.root.getDirectory('测试文件夹1')
-        let file = await fs.root.getFile('测试文件1')
-        await file.write('我爱北京天安门')   
-        file.readAsText().then(content => console.log(content))        
-    }
+[VSCode](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
+
+## Type Support for `.vue` Imports in TS
+
+TypeScript cannot handle type information for `.vue` imports by default, so we replace the `tsc` CLI with `vue-tsc` for type checking. In editors, we need [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) to make the TypeScript language service aware of `.vue` types.
+
+## Customize configuration
+
+See [Vite Configuration Reference](https://vite.dev/config/).
+
+## Project Setup
+
+```sh
+npm install
 ```
 
+### Compile and Hot-Reload for Development
 
+```sh
+npm run dev
+```
 
+### Type-Check, Compile and Minify for Production
+
+```sh
+npm run build
+```
+
+### Lint with [ESLint](https://eslint.org/)
+
+```sh
+npm run lint
+```
