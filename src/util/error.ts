@@ -1,4 +1,4 @@
-import { ErrorCodeMap } from "src/const/error";
+import { ErrorCodeMap } from "../const/error";
 
 // 生成 DOMException 的完整方法
 export function createDOMException(code: number, message?: string) {

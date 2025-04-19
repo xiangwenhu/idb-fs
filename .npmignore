@@ -7,3 +7,4 @@ src
 todo.md
 rollup.config.js
 tsconfig.json
+tsconfig.umd.json

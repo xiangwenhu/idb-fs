@@ -57,3 +57,4 @@ export interface FileSystemHandleMetaData {
 export interface FileSystemFileHandleMetaData extends FileSystemHandleMetaData {
     fileKey: string;
 }
+
