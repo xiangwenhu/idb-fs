@@ -25,7 +25,7 @@ export default class Uint8ArrayWritableStream extends WritableStream<DataType | 
     constructor(private buffer: Uint8Array, private options?: Uint8ArrayWritableStreamOptions) {
 
         const sink: UnderlyingSink = {
-            start: async () => {
+            async start() {
                 if (options?.onStart) {
                     await options.onStart();
                 }

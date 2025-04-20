@@ -1,4 +1,4 @@
-import { createDOMException } from "src/util/error";
+import { createDOMException } from "../util/error";
 import { IDBFileSystemDirectoryHandle } from "../IDBFileSystemDirectoryHandle";
 import { IDBFileSystemFileHandle } from "../IDBFileSystemFileHandle";
 import { IDBFileSystemHandle } from "../IDBFileSystemHandle";
