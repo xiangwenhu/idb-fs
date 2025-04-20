@@ -62,7 +62,7 @@ export default class FileProvider extends BaseProvider {
             },
         });
 
-        return writableStream.getWriter()
+        return writableStream;
     }
 
     async remove(fileHandle: IDBFileSystemFileHandle) {
