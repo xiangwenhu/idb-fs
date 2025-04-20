@@ -1,6 +1,10 @@
+import { TypedArray } from "./types/index";
+
+type DataType = ArrayBuffer | TypedArray | DataView | Blob | string;
+
 type WriteCommand = {
     type: "write" | "seek" | "truncate";
-    data?: Blob | ArrayBuffer | string;
+    data?: DataType;
     position?: number;
     size?: number;
 };
@@ -12,11 +16,11 @@ interface Uint8ArrayWritableStreamOptions {
     onWrite?(): Promise<void>
 }
 
-export default class Uint8ArrayWritableStream extends WritableStream<Blob | ArrayBuffer | string | WriteCommand> {
+export default class Uint8ArrayWritableStream extends WritableStream<DataType | WriteCommand> {
 
     private cursor = 0;
     private closed = false;
-    private eventTarget = new EventTarget(); // 事件派发器
+    // private eventTarget = new EventTarget(); // 事件派发器
 
     constructor(private buffer: Uint8Array, private options?: Uint8ArrayWritableStreamOptions) {
 
@@ -27,12 +31,13 @@ export default class Uint8ArrayWritableStream extends WritableStream<Blob | Arra
                 }
                 return true; // 等待初始化完成
             },
-            write: async (chunk) => {
+            write: async (chunk: DataType | WriteCommand) => {
                 if (this.closed) throw new DOMException("Stream closed", "InvalidStateError");
                 if (this.options?.onWrite) {
                     await this.options.onWrite();
                 }
                 await this.processChunk(chunk);
+
             },
             close: async () => {
                 if (options?.onClose) {
@@ -40,7 +45,7 @@ export default class Uint8ArrayWritableStream extends WritableStream<Blob | Arra
                 }
 
                 this.closed = true;
-                this.dispatchCloseEvent();
+                // this.dispatchCloseEvent();
             },
             abort: async (reason) => {
                 if (this.options?.onAbort) {
@@ -53,7 +58,7 @@ export default class Uint8ArrayWritableStream extends WritableStream<Blob | Arra
         super(sink);
     }
 
-    private async processChunk(chunk: any): Promise<void> {
+    private async processChunk(chunk: DataType | WriteCommand): Promise<void> {
         const params = this.normalizeChunk(chunk);
 
         switch (params.type) {
@@ -71,14 +76,14 @@ export default class Uint8ArrayWritableStream extends WritableStream<Blob | Arra
         }
     }
 
-    private normalizeChunk(chunk: any): WriteCommand {
-        if (chunk instanceof Blob || chunk instanceof ArrayBuffer || typeof chunk === 'string') {
-            return { type: 'write', data: chunk };
-        }
-        return chunk;
+    private normalizeChunk(chunk: DataType | WriteCommand): WriteCommand {
+        const c = chunk as WriteCommand;
+        if (c?.type) return c;
+
+        return { type: "write", data: chunk as DataType };
     }
 
-    private async handleWrite(data: Blob | ArrayBuffer | string, position?: number): Promise<void> {
+    private async handleWrite(data: DataType, position?: number): Promise<void> {
         const pos = position ?? this.cursor;
         const uint8Data = await this.convertToUint8Array(data);
 
@@ -90,12 +95,15 @@ export default class Uint8ArrayWritableStream extends WritableStream<Blob | Arra
         this.cursor = pos + uint8Data.length;
     }
 
-    private async convertToUint8Array(data: Blob | ArrayBuffer | string): Promise<Uint8Array> {
+    private async convertToUint8Array(data: DataType): Promise<Uint8Array> {
         if (typeof data === 'string') {
             return new TextEncoder().encode(data);
         }
         if (data instanceof Blob) {
             return new Uint8Array(await data.arrayBuffer());
+        }
+        if (data instanceof DataView) {
+            return new Uint8Array(data.buffer, data.byteOffset, data.byteLength);
         }
         return new Uint8Array(data);
     }
@@ -130,18 +138,50 @@ export default class Uint8ArrayWritableStream extends WritableStream<Blob | Arra
         return this.buffer;
     }
 
+    // addEventListener(type: 'close', listener: () => void, options?: AddEventListenerOptions | boolean): void {
+    //     this.eventTarget.addEventListener(type, listener, options);
+    // }
 
-    addEventListener(type: 'close', listener: () => void, options?: AddEventListenerOptions | boolean): void {
-        this.eventTarget.addEventListener(type, listener, options);
+    // removeEventListener(type: 'close', listener: () => void, options?: EventListenerOptions | boolean): void {
+    //     this.eventTarget.removeEventListener(type, listener, options);
+    // }
+
+    // private dispatchCloseEvent(): void {
+    //     const event = new Event('close');
+    //     this.eventTarget.dispatchEvent(event);
+    // }
+
+    public async write(data: DataType, position?: number): Promise<void> {
+        const writer = this.getWriter();
+        try {
+            await writer.ready;
+            const chunk: DataType | WriteCommand = typeof position === 'number' ? { type: 'write', data, position } as WriteCommand : data;
+
+            await writer.write(chunk);
+        } finally {
+            writer.releaseLock();
+        }
     }
 
-    removeEventListener(type: 'close', listener: () => void, options?: EventListenerOptions | boolean): void {
-        this.eventTarget.removeEventListener(type, listener, options);
+    public async seek(position: number): Promise<void> {
+        const writer = this.getWriter();
+        try {
+            await writer.ready;
+            await writer.write({ type: 'seek', position });
+        } finally {
+            writer.releaseLock();
+        }
     }
 
-    private dispatchCloseEvent(): void {
-        const event = new Event('close');
-        this.eventTarget.dispatchEvent(event);
+    public async truncate(size: number): Promise<void> {
+        const writer = this.getWriter();
+        try {
+            await writer.ready;
+            await writer.write({ type: 'truncate', size });
+        } finally {
+            writer.releaseLock();
+        }
     }
+
 }
 

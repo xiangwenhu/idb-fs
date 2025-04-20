@@ -1,41 +1,49 @@
 <!DOCTYPE html>
 <html lang="en">
+    <head>
+        <title></title>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+    </head>
 
-<head>
-  <title></title>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-</head>
+    <body>
+        <div id="mocha"></div>
 
-<body>
-  <div id="mocha"></div>
+        <script src="../dist/umd/index.js"></script>
 
-  <script src="../dist/umd/index.js"></script>
+        <button onclick="showPicker()">点我啊</button><br />
+        <button onclick="saveFile()">保存文件</button>
 
-  <button onclick="showPicker()">点我啊</button>
+        <script>
+            async function saveFile() {
+                // create a new handle
+                const newHandle = await window.showSaveFilePicker();
 
-  <script>
+                // create a FileSystemWritableFileStream to write to
+                const writableStream = await newHandle.createWritable();
 
+                // write our file
+                await writableStream.write("This is my file content");
 
-    async function showPicker() {
-      const dirHandle = await window.showDirectoryPicker();
+                // close the file and write the contents to disk.
+                await writableStream.close();
+            }
 
-      console.log(dirHandle.entries())
+            async function showPicker() {
+                const dirHandle = await window.showDirectoryPicker();
 
+                console.log(dirHandle.entries());
 
-      // for await (const [key, value] of dirHandle.entries()) {
-      //   console.log({ key, value });
-      // }
+                // for await (const [key, value] of dirHandle.entries()) {
+                //   console.log({ key, value });
+                // }
 
-      const dir1 = await dirHandle.getDirectoryHandle("旅行者");
-      const dir2 = await dir1.getDirectoryHandle("飞山景区");
-      const f = await dir2.getFileHandle("marker_green.jpg");
+                const dir1 = await dirHandle.getDirectoryHandle("旅行者");
+                const dir2 = await dir1.getDirectoryHandle("飞山景区");
+                const f = await dir2.getFileHandle("marker_green.jpg");
 
-      dir2.resolve(dir1).then(console.log)
-
-    }
-
-  </script>
-</body>
-
+                dir2.resolve(dir1).then(console.log);
+            }
+        </script>
+    </body>
 </html>

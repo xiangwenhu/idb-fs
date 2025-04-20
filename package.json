@@ -1,6 +1,6 @@
 {
   "name": "idb-fs",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "description": "",
   "main": "./dist/lib/index.js",
   "typings": "./dist/lib/index.d.ts",
@@ -8,7 +8,8 @@
   "scripts": {
     "build:umd": "rollup -c",
     "build:tsc": "tsc",
-    "build": "npm run build:tsc && npm run build:umd"
+    "build": "npm run build:tsc && npm run build:umd",
+    "ppack": "npm run build && npm pack"
   },
   "keywords": [],
   "author": "",

@@ -1,5 +1,6 @@
 import { IDBFileSystemHandle } from "./IDBFileSystemHandle";
 import { FileSystemFileHandleMetaData, HandleKind } from "./types/index";
+import Uint8ArrayWritableStream from "./Uint8ArrayWritableStream";
 import { protectProperty } from "./util/index";
 
 export class IDBFileSystemFileHandle implements IDBFileSystemHandle {
@@ -38,7 +39,7 @@ export class IDBFileSystemFileHandle implements IDBFileSystemHandle {
      * 参考：https://developer.mozilla.org/en-US/docs/Web/API/FileSystemHandle/isSameEntry
      * @param fileSystemHandle 
      */
-    isSameEntry(fileSystemHandle: IDBFileSystemHandle) {
+    isSameEntry(fileSystemHandle: IDBFileSystemHandle): Promise<boolean> {
         return this.provider.isSameEntry(this, fileSystemHandle)
     }
 
@@ -56,7 +57,7 @@ export class IDBFileSystemFileHandle implements IDBFileSystemHandle {
      * 创建一个 FileSystemWritableFileStream 对象，可用于写入文件。此方法返回一个可兑现这些写入流的 Promise 对象
      * 参考：https://developer.mozilla.org/en-US/docs/Web/API/FileSystemFileHandle/createWritable
      */
-    createWritable() {
+    createWritable(): Promise<Uint8ArrayWritableStream> {
         return this.provider.createWritable(this)
     }
 

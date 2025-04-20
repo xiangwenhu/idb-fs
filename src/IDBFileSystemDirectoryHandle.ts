@@ -1,3 +1,4 @@
+import { IDBFileSystemFileHandle } from "./IDBFileSystemFileHandle";
 import { IDBFileSystemHandle } from "./IDBFileSystemHandle"
 import { GetHandleOptions, FileSystemHandleMetaData, HandleKind, RemoveEntryOptions } from "./types/index"
 import { protectProperty } from "./util/index";
@@ -38,7 +39,7 @@ export class IDBFileSystemDirectoryHandle implements IDBFileSystemHandle {
      * 参考：https://developer.mozilla.org/en-US/docs/Web/API/FileSystemHandle/isSameEntry
      * @param fileSystemHandle 
      */
-    isSameEntry(fileSystemHandle: IDBFileSystemHandle) {
+    isSameEntry(fileSystemHandle: IDBFileSystemHandle): Promise<boolean> {
         return this.provider.isSameEntry(this, fileSystemHandle)
     }
 
@@ -55,7 +56,9 @@ export class IDBFileSystemDirectoryHandle implements IDBFileSystemHandle {
      * 参考：https://developer.mozilla.org/en-US/docs/Web/API/FileSystemDirectoryHandle/entries
      * 
      */
-    entries() {
+    entries(): {
+        [Symbol.asyncIterator](): AsyncGenerator<[string, IDBFileSystemDirectoryHandle | IDBFileSystemFileHandle], void, unknown>;
+    } {
         return this.provider.entries(this)
     }
 
@@ -66,7 +69,7 @@ export class IDBFileSystemDirectoryHandle implements IDBFileSystemHandle {
      * @param name 
      * @param options 
      */
-    getDirectoryHandle(name: string, options?: GetHandleOptions) {
+    getDirectoryHandle(name: string, options?: GetHandleOptions): Promise<IDBFileSystemDirectoryHandle> {
         return this.provider.getDirectoryHandle(this, name, options)
     }
 
@@ -78,7 +81,7 @@ export class IDBFileSystemDirectoryHandle implements IDBFileSystemHandle {
      * @param name 
      * @param options 
      */
-    getFileHandle(name: string, options?: GetHandleOptions) {
+    getFileHandle(name: string, options?: GetHandleOptions): Promise<IDBFileSystemFileHandle> {
         return this.provider.getFileHandle(this, name, options)
     }
 
@@ -86,7 +89,9 @@ export class IDBFileSystemDirectoryHandle implements IDBFileSystemHandle {
      * 返回一个异步迭代器，用于迭代调用此方法的 IDBFileSystemDirectoryHandle 中的条目的键。
      * 参考：https://developer.mozilla.org/en-US/docs/Web/API/FileSystemDirectoryHandle/keys
      */
-    keys() {
+    keys(): {
+        [Symbol.asyncIterator](): AsyncGenerator<string, void, unknown>;
+    } {
         return this.provider.keys(this)
     }
 
@@ -97,7 +102,7 @@ export class IDBFileSystemDirectoryHandle implements IDBFileSystemHandle {
      * @param name 
      * @param options 
      */
-    removeEntry(name: string, options: RemoveEntryOptions) {
+    removeEntry(name: string, options: RemoveEntryOptions): Promise<undefined> {
         return this.provider.removeEntry(this, name, options)
     }
 
@@ -106,7 +111,7 @@ export class IDBFileSystemDirectoryHandle implements IDBFileSystemHandle {
      * 返回一个包含从父目录前往指定子条目中间的目录的名称的数组。数组的最后一项是子条目的名称。
      * @param possibleDescendant 
      */
-    resolve(possibleDescendant: IDBFileSystemHandle) {
+    resolve(possibleDescendant: IDBFileSystemHandle): Promise<string[] | null> {
         return this.provider.resolve(this, possibleDescendant)
     }
 
@@ -114,7 +119,9 @@ export class IDBFileSystemDirectoryHandle implements IDBFileSystemHandle {
      * 返回一个异步迭代器，用于迭代调用此方法的 IDBFileSystemDirectoryHandle 中的条目的值。
      * 参考：https://developer.mozilla.org/en-US/docs/Web/API/FileSystemDirectoryHandle/values
      */
-    values() {
+    values(): {
+        [Symbol.asyncIterator](): AsyncGenerator<IDBFileSystemDirectoryHandle | IDBFileSystemFileHandle, void, unknown>;
+    } {
         return this.provider.values(this)
     }
 }
