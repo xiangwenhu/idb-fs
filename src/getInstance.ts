@@ -5,6 +5,7 @@ import ObjectStore from "./provider/ObjectStore";
 import { InfoStoreKey, InstanceOptions, StoreFileItem, StoreInfoItem } from "./types/index";
 import { getDatabase } from "./util/db";
 import { createDOMException } from "./util/error";
+import { isValidDBName } from "./util/index";
 
 const DefaultOptions: InstanceOptions = {
     name: IDB_DEFAULT_DATABASE_NAME
@@ -16,12 +17,16 @@ export function isSupported() {
 
 export function getInstance(options: InstanceOptions = DefaultOptions) {
     if (!isSupported()) return Promise.reject(createDOMException(DOMException.NOT_SUPPORTED_ERR, FILE_ERROR.NOT_SUPPORTED));
+
     const opts = Object.assign({}, DefaultOptions, options || {});
+
+    if (!isValidDBName(opts.name!)) return Promise.reject(createDOMException(DOMException.INVALID_CHARACTER_ERR, FILE_ERROR.INVALID_DB_NAME));
+
 
     const dbName = `${opts.name}`.trim();
     if (dbName === "") return Promise.reject(`无效的database name`);
 
-    const fullDBName = `${IDB_DATABASE_PREFIX}_${dbName}`;
+    const fullDBName = `${IDB_DATABASE_PREFIX}${dbName}`;
     const infoStoreName = IDB_INFO_STORE_NAME;
     const fileStoreName = IDB_FILE_STORE_NAME;
 
@@ -43,4 +48,14 @@ export function getInstance(options: InstanceOptions = DefaultOptions) {
             const rootDirectory = directoryProvider.createDirectoryHandle(DIR_SEPARATOR, DIR_SEPARATOR);
             return rootDirectory;
         })
+}
+
+export function getAllIDBFileSystem() {
+    if (!isSupported()) return Promise.reject(createDOMException(DOMException.NOT_SUPPORTED_ERR, FILE_ERROR.NOT_SUPPORTED));
+    return indexedDB.databases().then(dbs => {
+        return dbs.filter(db => db.name && db.name.startsWith(IDB_DATABASE_PREFIX)).map(db => ({
+            name: db.name!.replace(IDB_DATABASE_PREFIX, ""),
+            version: db.version
+        }));
+    })
 }

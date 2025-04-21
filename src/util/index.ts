@@ -154,3 +154,11 @@ export function checkDirectoryName(name: string) {
         throw new TypeError("name contains invalid characters")
     }
 }
+
+export function isValidDBName(name: string) {
+    return (
+        typeof name === 'string' && // 必须是字符串类型
+        name.trim().length > 0 &&          // 不能为空字符串
+        !/\0/.test(name)            // 不能包含空字符（\0）
+    );
+}

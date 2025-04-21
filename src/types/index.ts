@@ -10,9 +10,17 @@ export interface InstanceOptions {
     name?: string;
 }
 
-/**
- * 
- */
+export interface RemoveEntryOptions {
+    recursive?: boolean;
+}
+
+export interface GetHandleOptions {
+    create?: boolean;
+}
+
+
+
+
 export interface StoreInfoBaseItem {
     parentPath: string;
     kind: HandleKind;
@@ -43,13 +51,7 @@ export type StoreInfoItem = StoreInfoFileItem | StoreInfoDirectoryItem;
 export type StoreFileItem = Uint8Array;
 
 
-export interface RemoveEntryOptions {
-    recursive?: boolean;
-}
 
-export interface GetHandleOptions {
-    create?: boolean;
-}
 
 export interface FileSystemHandleMetaData {
     parentPath: string;

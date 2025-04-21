@@ -1,11 +1,11 @@
 export const FILE_ERROR = {
-    INITIALIZE_FAILED: '文件系统初始化失败',
-    FILE_EXISTED: '文件已存在',
-    Directory_EXISTED: '目录已存在',
-    ONLY_FILE_WRITE: '只有文件才能写入',
-    NOT_ENTRY: '不是有效的Entry对象',
-    INVALID_PATH: '文件或者目录不能包含特殊字符和关键字',
-    NOT_SUPPORTED: '浏览器不支持改功能',
+    INITIALIZE_FAILED: 'file system initialize failed',
+    FILE_EXISTED: 'file existed',
+    DIRECTORY_EXISTED: 'directory existed',
+    ONLY_FILE_WRITE: 'only file can be write',
+    INVALID_PATH: 'file or directory path is invalid',
+    NOT_SUPPORTED: 'browser not supported',
+    INVALID_DB_NAME: "invalid database name"
 };
 
 /**
@@ -39,7 +39,7 @@ export const REG_INVALID_FILE_NAME = /^(?!^(PRN|AUX|CLOCK\$|NUL|CON|COM[0-9]|LPT
 /**
  * IDB数据库前缀
  */
-export const IDB_DATABASE_PREFIX = "__idb_file_system__";
+export const IDB_DATABASE_PREFIX = "_!@#$_idb_file_system__";
 
 /**
  * 默认数据库名称
