@@ -14,6 +14,7 @@ export interface InstanceOptions {
  * 
  */
 export interface StoreInfoBaseItem {
+    parentPath: string;
     kind: HandleKind;
     name: string;
     createTime: number;
@@ -51,7 +52,7 @@ export interface GetHandleOptions {
 }
 
 export interface FileSystemHandleMetaData {
-    path: string;
+    parentPath: string;
 }
 
 export interface FileSystemFileHandleMetaData extends FileSystemHandleMetaData {
@@ -72,3 +73,9 @@ export type TypedArray = Int8Array |
     Float64Array;
 // BigInt64Array |
 // BigUint64Array;
+
+
+/**
+ * [parentPath, name]; // 主键数组需严格对应字段顺序
+ */
+export type InfoStoreKey = [string, string];

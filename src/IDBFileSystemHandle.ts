@@ -8,6 +8,10 @@ export interface IDBFileSystemHandle {
 
     // 自定义的
     readonly metaData: FileSystemHandleMetaData
+
+    get key(): [string, string];
+
+    get fullPath(): string;
 }
 
 

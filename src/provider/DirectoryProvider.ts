@@ -3,7 +3,7 @@ import { IDBFileSystemDirectoryHandle } from "../IDBFileSystemDirectoryHandle";
 import { IDBFileSystemFileHandle } from "../IDBFileSystemFileHandle";
 import { IDBFileSystemHandle } from "../IDBFileSystemHandle";
 import { DIR_OPEN_BOUND, DIR_SEPARATOR } from "../const/index";
-import { GetHandleOptions, StoreInfoBaseItem, StoreFileItem, StoreInfoDirectoryItem, StoreInfoFileItem, RemoveEntryOptions } from "../types/index";
+import { GetHandleOptions, StoreInfoBaseItem, StoreFileItem, StoreInfoDirectoryItem, StoreInfoFileItem, RemoveEntryOptions, InfoStoreKey } from "../types/index";
 import { checkFilename, createAsyncIteratorHoc, isString, isValidDirectoryName, isValidFileName, protectProperty, resolveToFullPath, uuid } from "../util/index";
 import BaseProvider from "./BaseProvider";
 import FileProvider from "./FileProvider";
@@ -14,7 +14,7 @@ export class DirectoryProvider extends BaseProvider {
     protected fileProvider!: FileProvider
 
     constructor(
-        infoStore: ObjectStore<string, StoreInfoFileItem | StoreInfoDirectoryItem>,
+        infoStore: ObjectStore<InfoStoreKey, StoreInfoFileItem | StoreInfoDirectoryItem>,
         fileStore: ObjectStore<string, StoreFileItem>,
         fileProvider: FileProvider
     ) {
@@ -23,16 +23,16 @@ export class DirectoryProvider extends BaseProvider {
     }
 
 
-    public createDirectoryHandle(info: StoreInfoBaseItem | string, fullPath: string) {
+    public createDirectoryHandle(info: StoreInfoBaseItem | string, parentPath: string) {
         const name = typeof info == "string" ? info : info.name;
         const handle = new IDBFileSystemDirectoryHandle(name);
-        this.setMetadata(handle, { path: fullPath })
+        this.setMetadata(handle, { parentPath })
         this.setProvider(handle);
         return handle
     }
 
     // 定义一个私有方法 toFileHandle，用于将给定的信息对象或字符串转换为文件句柄
-    private createFileHandle(info: StoreInfoFileItem, fullPath: string) {
+    private createFileHandle(info: StoreInfoFileItem, parentPath: string) {
         // 根据 info 的类型确定文件名
         // 如果 info 是字符串类型，则直接使用该字符串作为文件名
         // 如果 info 是对象类型，则使用对象的 name 属性作为文件名
@@ -41,7 +41,7 @@ export class DirectoryProvider extends BaseProvider {
         const handle = new IDBFileSystemFileHandle(name);
         // 设置文件句柄的路径为传入的 fullPath
         this.setMetadata(handle, {
-            path: fullPath,
+            parentPath,
             fileKey: typeof info == "string" ? info : info.fileKey
         });
         // 调用 setProvider 方法，为文件句柄设置文件提供者
@@ -55,13 +55,11 @@ export class DirectoryProvider extends BaseProvider {
         if (handle1.kind !== 'directory' || handle2.kind !== 'directory') {
             return false
         }
-        return handle1.metaData.path === handle2.metaData.path
+        return handle1.fullPath === handle2.fullPath
     }
 
     async remove(handle: IDBFileSystemDirectoryHandle, options: RemoveEntryOptions = {}) {
-        const { metaData } = handle;
-        const { path } = metaData;
-        const info = await this.getInfoItem(path);
+        const info = await this.getInfoItemByHandle(handle);
         if (info == undefined) createDOMException(DOMException.NOT_FOUND_ERR)
 
 
@@ -73,101 +71,70 @@ export class DirectoryProvider extends BaseProvider {
         // 删除目录或者文件
         for (let i = 0; i < entries.length; i++) {
             const [key, item] = entries[i];
-            await this.infoStore.delete(key);
+            await this.deleteInfoByHandle(item);
             if (item.kind == "file") {
                 await this.fileStore.delete((item as IDBFileSystemFileHandle).metaData.fileKey);
             }
         }
 
-        await this.infoStore.delete(path);
+        await this.deleteInfoByHandle(handle)
         return undefined
     }
 
 
-    private querySubEntries<D = any>(range: IDBKeyRange | undefined,
-        filter: (key: string, item: StoreInfoBaseItem) => boolean,
-        getData: (key: string, item: StoreInfoBaseItem) => D) {
+    private querySubEntries<D = any>(query: IDBKeyRange | IDBValidKey | null,
+        filter: (key: InfoStoreKey, item: StoreInfoBaseItem) => boolean,
+        getData: (key: InfoStoreKey, item: StoreInfoBaseItem) => D) {
 
         const entries: D[] = []
 
-        return this.infoStore.openCursor(range, "next", (event: any) => {
-            const cursor: IDBCursorWithValue = event.target.result;
-            if (cursor) {
-                const key: string = cursor.key as string;
-                const item: StoreInfoBaseItem = cursor.value;
+        return this.infoStore.openIndexCursor({
+            name: "parentPath",
+            type: "openCursor",
+            query,
+            direction: "next",
+            onSuccess: (event: any) => {
+                const cursor: IDBCursorWithValue = event.target.result;
+                if (cursor) {
+                    const key: InfoStoreKey = cursor.key as InfoStoreKey;
+                    const item: StoreInfoBaseItem = cursor.value;
 
-                const isValid = filter(key, item);
-                if (isValid) {
-                    const data = getData(key, item);
-                    entries.push(data)
+                    const isValid = filter(key, item);
+                    if (isValid) {
+                        const data = getData(key, item);
+                        entries.push(data)
+                    }
+                    cursor.continue()
                 }
-                cursor.continue()
             }
         }).then(() => {
             return entries
         })
-
     }
 
-    // private innerEntries(handle: IDBFileSystemDirectoryHandle) {
-    //     let range: IDBKeyRange | undefined,
-    //         entries: [string, IDBFileSystemDirectoryHandle | IDBFileSystemFileHandle][] = []
-    //     if (handle.metaData.path != DIR_SEPARATOR && handle.metaData.path != '') {
-    //         range = IDBKeyRange.bound(
-    //             handle.metaData.path + DIR_SEPARATOR, handle.metaData.path + DIR_OPEN_BOUND, false, true)
-    //     }
-    //     let valPartsLen, fullPathPartsLen
-    //     return this.infoStore.openCursor(range, "next", (event: any) => {
-    //         const cursor: IDBCursorWithValue = event.target.result;
-    //         if (cursor) {
-    //             const key: string = cursor.key as string;
-    //             const info: IDBStoreBaseItem = cursor.value;
-    //             valPartsLen = key.split(DIR_SEPARATOR).length
-    //             fullPathPartsLen = handle.metaData.path.split(DIR_SEPARATOR).length
-    //             if (key !== DIR_SEPARATOR) {
-    //                 // 区分根目录和非根目录
-    //                 if (handle.metaData.path === DIR_SEPARATOR && valPartsLen < fullPathPartsLen + 1 ||
-    //                     handle.metaData.path !== DIR_SEPARATOR && valPartsLen === fullPathPartsLen + 1) {
-    //                     const subHandleKey = resolveToFullPath(handle.metaData.path, key);
-    //                     const subHandle = info.kind == "directory" ? this.toDirectoryHandle(info, subHandleKey) : this.toFileHandle(info as IDBStoreInfoFileItem, subHandleKey);
-    //                     entries.push([subHandleKey, subHandle]);
-    //                 }
-    //             }
-    //             cursor.continue()
-    //         }
-    //     }).then(() => {
-    //         return entries
-    //     })
-    // }
+    private async subEntries(handle: IDBFileSystemDirectoryHandle, options?: { recursive: boolean }) {
 
-    private subEntries(handle: IDBFileSystemDirectoryHandle, options?: { recursive: boolean }) {
+        const parentPath = handle.fullPath;
+        let lowerKey = parentPath;
+        let upperKey: string | null = parentPath + DIR_OPEN_BOUND;
 
-        let range: IDBKeyRange | undefined = undefined;
-        let valPartsLen, fullPathPartsLen;
-
-        if (handle.metaData.path != DIR_SEPARATOR && handle.metaData.path != '') {
-            range = IDBKeyRange.bound(handle.metaData.path + DIR_SEPARATOR, handle.metaData.path + DIR_OPEN_BOUND, false, true)
+        let range: IDBKeyRange | IDBValidKey | null
+        if (handle.metaData.parentPath === DIR_SEPARATOR && !!options?.recursive) {
+            // 根目录 + 递归特别处理
+            range = IDBKeyRange.lowerBound(DIR_SEPARATOR)
+        } else {
+            range = !!options?.recursive ? IDBKeyRange.bound(lowerKey, upperKey, false, true) : IDBKeyRange.only(parentPath);
         }
 
-        const filter = options?.recursive === true ? (_key: any, _item: any) => {
+        const filter = (_key: any, _item: StoreInfoBaseItem) => {
             return true
-        } : (key: string, _item: StoreInfoBaseItem) => {
-            valPartsLen = key.split(DIR_SEPARATOR).length
-            fullPathPartsLen = handle.metaData.path.split(DIR_SEPARATOR).length
-            if (key !== DIR_SEPARATOR) {
-                // 区分根目录和非根目录
-                if (handle.metaData.path === DIR_SEPARATOR && valPartsLen < fullPathPartsLen + 1 ||
-                    handle.metaData.path !== DIR_SEPARATOR && valPartsLen === fullPathPartsLen + 1) {
-                    return true
-                }
-            }
-            return false
         }
 
-        const getData = (key: string, item: StoreInfoBaseItem) => {
-            const subHandleKey = resolveToFullPath(handle.metaData.path, key);
-            const subHandle = item.kind == "directory" ? this.createDirectoryHandle(item, subHandleKey) : this.createFileHandle(item as StoreInfoFileItem, subHandleKey);
-            return [subHandleKey, subHandle] as [string, IDBFileSystemDirectoryHandle | IDBFileSystemFileHandle]
+        const getData = (_key: any, item: StoreInfoBaseItem) => {
+            const name = item.name;
+            const parentPath = item.parentPath;
+            const subHandle = item.kind == "directory" ? this.createDirectoryHandle(item, parentPath) : this.createFileHandle(item as StoreInfoFileItem, parentPath);
+            return [name, subHandle] as [string, IDBFileSystemDirectoryHandle | IDBFileSystemFileHandle]
         }
 
         return this.querySubEntries<[string, IDBFileSystemDirectoryHandle | IDBFileSystemFileHandle]>(
@@ -178,20 +145,20 @@ export class DirectoryProvider extends BaseProvider {
     }
 
     entries(handle: IDBFileSystemDirectoryHandle) {
-        const info = this.getInfoItem(handle.metaData.path);
+        const info = this.getInfoItemByHandle(handle);
         if (!info) throw createDOMException(DOMException.NOT_FOUND_ERR);
         return createAsyncIteratorHoc(() => this.subEntries(handle))
     }
 
-    async getDirectoryHandle(directory: IDBFileSystemDirectoryHandle, name: string, options?: GetHandleOptions) {
+    async getDirectoryHandle(handle: IDBFileSystemDirectoryHandle, name: string, options?: GetHandleOptions) {
 
         checkFilename(name);
 
-        const fullPath = resolveToFullPath(directory.metaData.path, name);
-        const dir = await this.getInfoItem(fullPath);
+        const parentPath = handle.fullPath;
+        const info = await this.getInfoItem([parentPath, name]);
 
-        if (dir) {
-            if (dir.kind == "directory") return this.createDirectoryHandle(dir, fullPath);
+        if (info) {
+            if (info.kind == "directory") return this.createDirectoryHandle(info, parentPath);
             throw createDOMException(DOMException.TYPE_MISMATCH_ERR);
         }
 
@@ -206,22 +173,22 @@ export class DirectoryProvider extends BaseProvider {
             name,
             createTime: time,
             lastModifiedTime: time,
-        }, fullPath);
+            parentPath
+        });
 
-        const handle = this.createDirectoryHandle(name, fullPath)
+        const targetHandle = this.createDirectoryHandle(name, parentPath)
 
-        return handle
+        return targetHandle
 
     }
 
-    async getFileHandle(directory: IDBFileSystemDirectoryHandle, name: string, options?: GetHandleOptions) {
+    async getFileHandle(handle: IDBFileSystemDirectoryHandle, name: string, options?: GetHandleOptions) {
         checkFilename(name);
-
-        const fullPath = resolveToFullPath(directory.metaData.path, name);
-        const info = await this.getInfoItem(fullPath);
+        const parentPath = handle.fullPath;
+        const info = await this.getInfoItem([parentPath, name]);
 
         if (info) {
-            if (info.kind == "file") return this.createFileHandle(info as StoreInfoFileItem, fullPath);
+            if (info.kind == "file") return this.createFileHandle(info as StoreInfoFileItem, parentPath);
             throw createDOMException(DOMException.TYPE_MISMATCH_ERR);
         }
 
@@ -238,20 +205,21 @@ export class DirectoryProvider extends BaseProvider {
             name,
             createTime: time,
             lastModifiedTime: time,
-            fileKey: fileKey
+            fileKey: fileKey,
+            parentPath
         }
 
-        await this.infoStore.add(fileInfo, fullPath);
+        await this.infoStore.add(fileInfo);
 
         await this.fileStore.add(new Uint8Array(), fileKey);
 
-        const handle = this.createFileHandle(fileInfo, fullPath)
+        const targetHandle = this.createFileHandle(fileInfo, parentPath)
 
-        return handle
+        return targetHandle
     }
 
     keys(handle: IDBFileSystemDirectoryHandle) {
-        const info = this.getInfoItem(handle.metaData.path);
+        const info = this.getInfoItemByHandle(handle);
         if (!info) throw createDOMException(DOMException.NOT_FOUND_ERR);
         return createAsyncIteratorHoc(() => this.subEntries(handle).then((entries) => entries.map((entry) => entry[0])))
     }
@@ -266,34 +234,35 @@ export class DirectoryProvider extends BaseProvider {
         }
 
         const { metaData } = handle;
+        const parentPath = handle.fullPath;
 
-        const subPath = resolveToFullPath(metaData.path, name);
+        const subEntryKey: [string, string] = [parentPath, name];
 
-        const info = await this.getInfoItem(subPath);
+        const info = await this.getInfoItem(subEntryKey);
         if (info == undefined) throw createDOMException(DOMException.NOT_FOUND_ERR);
 
         // 删除文件
         if (info.kind == "file") {
             await this.fileStore.delete((info as StoreInfoFileItem).fileKey);
-            await this.infoStore.delete(subPath);
+            await this.infoStore.delete(subEntryKey);
             return undefined;
         }
 
         // 删除目录
-        const subEntry = await this.getDirectoryHandle(handle, subPath);
+        const subEntry = await this.getDirectoryHandle(handle, name);
         return this.remove(subEntry, options);
 
     }
 
-    async resolve(handle: IDBFileSystemDirectoryHandle, handle2: IDBFileSystemHandle) {
-        const path1 = handle.metaData.path;
-        const path2 = handle2.metaData.path;
+    async resolve(handle1: IDBFileSystemDirectoryHandle, handle2: IDBFileSystemHandle) {
+        const path1 = handle1.fullPath;
+        const path2 = handle2.fullPath;
         if (path2.indexOf(path1) < 0) return null;
         return path2.substring(path1.length).split(DIR_SEPARATOR).filter(Boolean);
     }
 
     values(handle: IDBFileSystemDirectoryHandle) {
-        const info = this.getInfoItem(handle.metaData.path);
+        const info = this.getInfoItemByHandle(handle);
         if (!info) throw createDOMException(DOMException.NOT_FOUND_ERR);
         return createAsyncIteratorHoc(() => this.subEntries(handle).then((entries) => entries.map((entry) => entry[1])))
     }

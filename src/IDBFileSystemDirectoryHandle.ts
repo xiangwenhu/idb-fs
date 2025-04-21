@@ -1,7 +1,7 @@
 import { IDBFileSystemFileHandle } from "./IDBFileSystemFileHandle";
 import { IDBFileSystemHandle } from "./IDBFileSystemHandle"
 import { GetHandleOptions, FileSystemHandleMetaData, HandleKind, RemoveEntryOptions } from "./types/index"
-import { protectProperty } from "./util/index";
+import { protectProperty, resolveToFullPath } from "./util/index";
 
 export class IDBFileSystemDirectoryHandle implements IDBFileSystemHandle {
 
@@ -16,6 +16,16 @@ export class IDBFileSystemDirectoryHandle implements IDBFileSystemHandle {
 
     constructor(directoryName: string) {
         protectProperty(this, "directoryName", directoryName)
+    }
+
+    get fullPath(): string {
+        return resolveToFullPath(this.metaData.parentPath, this.name)
+    }
+
+    // 定义一个名为 key 的 getter 方法
+    get key(): [string, string]{
+        // 返回一个数组，数组中包含 this.metaData 属性的值
+        return [this.metaData.parentPath, this.name]
     }
 
     /**

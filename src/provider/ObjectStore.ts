@@ -23,9 +23,9 @@ export default class ObjectStore<K = IDBValidKey | null, D = any> {
 
     protected toPromise<R = any>(methodName: StoreMethod, ...args: any[]): Promise<R> {
         try {
-            let success: Function;
+            let onSuccess: Function;
             if (args.length >= 1 && typeof args[args.length - 1] === 'function') {
-                success = args[args.length - 1]
+                onSuccess = args[args.length - 1]
                 args = args.slice(0, args.length - 1)
             }
 
@@ -44,7 +44,7 @@ export default class ObjectStore<K = IDBValidKey | null, D = any> {
                 //游标
                 if (['openCursor', 'openKeyCursor'].indexOf(methodName) >= 0) {
                     req.onsuccess = function (event: any) {
-                        success(event)
+                        onSuccess(event)
                     }
                     trans.oncomplete = function () {
                         return resolve(undefined as R)
@@ -70,6 +70,45 @@ export default class ObjectStore<K = IDBValidKey | null, D = any> {
         }
     }
 
+    openIndexCursor<R = any>(options: {
+        name: string,
+        query: IDBValidKey | IDBKeyRange | null,
+        type: "openCursor" | "openKeyCursor",
+        direction?: IDBCursorDirection;
+        onSuccess: (ev: Event) => any
+    }): Promise<R> {
+
+        try {
+
+            const { name, query, type, onSuccess, direction } = options;
+            return new Promise((resolve, reject) => {
+                // 获得事务
+                const trans = this.transaction
+
+                const store = trans.objectStore(this.storeName)
+                trans.objectStore(this.storeName)
+
+                const index = store.index(name);
+
+                const request = type == "openCursor" ? index.openCursor(query, direction) : index.openKeyCursor(query, direction)
+
+                request.onsuccess = function (event: any) {
+                    onSuccess(event)
+                }
+                trans.oncomplete = function () {
+                    return resolve(undefined as R)
+                }
+                // 请求失败
+                request.onerror = () => reject(request.error)
+                // 事务失败
+                trans.onerror = () => reject(trans.error)
+
+            })
+        } catch (err) {
+            return Promise.reject(err)
+        }
+    }
+
     add(value: D, key?: K) {
         return this.toPromise<K>("add", value, key)
     }
@@ -82,18 +121,8 @@ export default class ObjectStore<K = IDBValidKey | null, D = any> {
         return this.toPromise<number>("count", key);
     }
 
-    // 定义一个名为 createIndex 的方法，用于在数据库中创建索引
-    // 定义一个名为 createIndex 的方法，用于在数据库中创建索引
-    createIndex(name: string, keyPath: string | string[], options?: IDBIndexParameters) {
-        return this.toPromise<IDBIndex>("createIndex", name, keyPath, options);
-    }
-
     delete(key: K | IDBKeyRange) {
         return this.toPromise<undefined>("delete", key);
-    }
-
-    deleteIndex(name: string) {
-        return this.toPromise<undefined>("deleteIndex", name);
     }
 
     get(key: K | IDBKeyRange) {
@@ -109,14 +138,14 @@ export default class ObjectStore<K = IDBValidKey | null, D = any> {
     }
 
     index(name: string) {
-        return this.toPromise<IDBIndex>("index", name);
+        return this.transaction.objectStore(this.storeName).index(name);
     }
 
-    openCursor(query?: K | IDBKeyRange, direction?: IDBCursorDirection, onSuccess?:(ev: Event) => any) {
+    openCursor(query?: K | IDBKeyRange, direction?: IDBCursorDirection, onSuccess?: (ev: Event) => any) {
         return this.toPromise<IDBCursor | null>("openCursor", query, direction, onSuccess);
     }
 
-    openKeyCursor(query?: K | IDBKeyRange, direction?: IDBCursorDirection, onSuccess?:(ev: Event) => any) {
+    openKeyCursor(query?: K | IDBKeyRange, direction?: IDBCursorDirection, onSuccess?: (ev: Event) => any) {
         return this.toPromise<IDBCursor | null>("openKeyCursor", query, direction, onSuccess);
     }
 

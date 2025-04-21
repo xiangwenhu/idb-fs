@@ -1,7 +1,7 @@
 import { IDBFileSystemHandle } from "./IDBFileSystemHandle";
 import { FileSystemFileHandleMetaData, HandleKind } from "./types/index";
 import Uint8ArrayWritableStream from "./Uint8ArrayWritableStream";
-import { protectProperty } from "./util/index";
+import { protectProperty, resolveToFullPath } from "./util/index";
 
 export class IDBFileSystemFileHandle implements IDBFileSystemHandle {
 
@@ -32,6 +32,16 @@ export class IDBFileSystemFileHandle implements IDBFileSystemHandle {
      */
     get name() {
         return this.filename
+    }
+
+    get fullPath(): string {
+        return resolveToFullPath(this.metaData.parentPath, this.name)
+    }
+
+    // 定义一个名为 key 的 getter 方法
+    get key(): [string, string] {
+        // 返回一个数组，数组中包含 this.metaData 属性的值
+        return [this.metaData.parentPath, this.name]
     }
 
     /**

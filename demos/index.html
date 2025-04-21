@@ -1,105 +1,115 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <title></title>
-        <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-    </head>
 
-    <body>
-        <div id="mocha"></div>
+<head>
+    <title></title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+</head>
 
-        <script src="../dist/umd/index.js"></script>
+<body>
+    <div id="mocha"></div>
 
-        <script>
-            // 创建目录和文件
-            (async function name(params) {
-                let rootDir = await IDBFileSystem.getInstance();
-                let dirHandle = await rootDir.getDirectoryHandle(
-                    "测试文件夹1",
-                    { create: true }
-                );
-                let dirHandleL2 = await dirHandle.getDirectoryHandle(
-                    "测试文件夹1的子文件夹1",
-                    { create: true }
-                );
-                let dirHandleL2_2 = await dirHandle.getDirectoryHandle(
-                    "测试文件夹1的子文件夹2",
-                    { create: true }
-                );
+    <script src="../dist/umd/index.js"></script>
 
-                let fileHandle = await rootDir.getFileHandle(
-                    "测试文件1.txt",
-                    { create: true }
-                );
+    <script>
+        // 创建目录和文件
+        (async function name(params) {
+            let rootDir = await IDBFileSystem.getInstance();
+            let dirHandle = await rootDir.getDirectoryHandle(
+                "测试文件夹1",
+                { create: true }
+            );
+            let dirHandleL2 = await dirHandle.getDirectoryHandle(
+                "测试文件夹1的子文件夹1",
+                { create: true }
+            );
+            let dirHandleL2_2 = await dirHandle.getDirectoryHandle(
+                "测试文件夹1的子文件夹2",
+                { create: true }
+            );
 
-                let fileHandleL2_1 = await dirHandleL2.getFileHandle(
-                    "测试文件夹1的子文件夹1的文件.txt",
-                    { create: true }
-                );
-                let fileHandleL2_2 = await dirHandleL2.getFileHandle(
-                    "测试文件夹1的子文件夹1的文件2.txt",
-                    { create: true }
-                );
+            let fileHandle = await rootDir.getFileHandle(
+                "测试文件1.txt",
+                { create: true }
+            );
 
-
-                // resolve
-                // dirHandle.resolve(fileHandle).then(r => console.log("resolve:", r)).catch(console.error);
-                // dirHandle.resolve(dirHandle).then(r => console.log("resolve:", r)).catch(console.error);
-                // dirHandleL2_2.resolve(dirHandle).then(r => console.log("resolve:", r)).catch(console.error)
+            let fileHandleL2_1 = await dirHandleL2.getFileHandle(
+                "测试文件夹1的子文件夹1的文件.txt",
+                { create: true }
+            );
+            let fileHandleL2_2 = await dirHandleL2.getFileHandle(
+                "测试文件夹1的子文件夹1的文件2.txt",
+                { create: true }
+            );
 
 
-                // 遍历
-                // const tempDir = dirHandle;
-                // for await (const [key, value] of tempDir.entries()) {
-                //     console.log({ key, value });
-                // }
-                // for await (const key of tempDir.keys()) {
-                //     console.log("key:", key);
-                // }
-                // for await (const v of tempDir.values()) {
-                //     console.log("v:", v);
-                // }
 
 
-                // isSameEntry
-                // fileHandle.isSameEntry(fileHandleL2_2).then(r=> console.log("fileHandle.isSameEntry(fileHandleL2_2):", r));
-                // fileHandle.isSameEntry(fileHandle).then(r=> console.log("fileHandle.isSameEntry(fileHandle):", r))
-                
-                // rootDir.isSameEntry(dirHandle).then(r=> console.log("rootDir.isSameEntry(dirHandle):", r))
-                // dirHandle.isSameEntry(dirHandle).then(r=> console.log("dirHandle.isSameEntry(dirHandle):", r))
+            // resolve
+            // dirHandle.resolve(fileHandle).then(r => console.log("resolve:", r)).catch(console.error);
+            // dirHandle.resolve(dirHandle).then(r => console.log("resolve:", r)).catch(console.error);
+            // dirHandleL2_2.resolve(dirHandle).then(r => console.log("resolve:", r)).catch(console.error)
+            // dirHandle.resolve(fileHandleL2_2).then(r => console.log("resolve:", r)).catch(console.error)
+
+            // 遍历
+            // const tempDir = rootDir;
+            // for await (const [key, value] of tempDir.entries()) {
+            //     console.log( key, value );
+            // }
+            // for await (const key of tempDir.keys()) {
+            //     console.log("key:", key);
+            // }
+            // for await (const v of tempDir.values()) {
+            //     console.log("v:", v);
+            // }
 
 
-                // createWritable
-                // const contents = "我们都是好孩子我们都是好孩子我们都是好孩子我们都是好孩子我们都是好孩子我们都是好孩子我们都是好孩子我们都是好孩子"
-                // const writable = await fileHandleL2_1.createWritable();
-                // // Write the contents of the file to the stream.
-                // await writable.write(contents);
-                // // Close the file and write the contents to disk.
-                // await writable.close();
-         
+            // isSameEntry
+            // fileHandle.isSameEntry(fileHandleL2_2).then(r=> console.log("fileHandle.isSameEntry(fileHandleL2_2):", r));
+            // fileHandle.isSameEntry(fileHandle).then(r=> console.log("fileHandle.isSameEntry(fileHandle):", r))
 
-                // getFile
-                // fileHandleL2_1.getFile().then(r=> console.log("fileHandle file:", r));
-                // fileHandleL2_2.getFile().then(r=> console.log("fileHandleL2_2 file:", r))
+            // rootDir.isSameEntry(dirHandle).then(r=> console.log("rootDir.isSameEntry(dirHandle):", r))
+            // dirHandle.isSameEntry(dirHandle).then(r=> console.log("dirHandle.isSameEntry(dirHandle):", r))
 
-        
 
-                // 文件删除
-                // fileHandleL2_1.remove();
-                // fileHandleL2_2.remove();
+            // createWritable
+            // const contents = "我们都是好孩子我们都是好孩子我们都是好孩子我们都是好孩子我们都是好孩子我们都是好孩子我们都是好孩子我们都是好孩子"
+            // const writable = await fileHandleL2_1.createWritable();
+            // // Write the contents of the file to the stream.
+            // await writable.write(contents);
+            // // Close the file and write the contents to disk.
+            // await writable.close();
 
-                // 目录删除文件
-                // dirHandleL2.removeEntry("测试文件夹1的子文件夹1的文件.txt");
-                // dirHandleL2.removeEntry("测试文件夹1的子文件夹1的文件2.txt")
 
-                // 目录删除
-                // dirHandleL2.remove({
-                //     recursive: true
-                // })
+            // getFile
+            // fileHandleL2_1.getFile().then(r=> console.log("fileHandle file:", r));
+            // fileHandleL2_2.getFile().then(r=> console.log("fileHandleL2_2 file:", r))
 
-                // rootDir.remove({ recursive: true})
-            })();
-        </script>
-    </body>
+
+
+            // 文件删除
+            // fileHandleL2_1.remove();
+            // fileHandleL2_2.remove();
+
+            // 目录删除文件
+            // dirHandleL2.removeEntry("测试文件夹1的子文件夹1的文件.txt");
+            // dirHandleL2.removeEntry("测试文件夹1的子文件夹1的文件2.txt")
+            // rootDir.removeEntry("测试文件夹1", { recursive: true });
+
+
+            // 目录删除
+            // dirHandleL2.remove({
+            //     recursive: true
+            // })
+
+            // dirHandleL2_2.remove({
+            //     recursive: true
+            // })
+
+            rootDir.remove()
+        })();
+    </script>
+</body>
+
 </html>
