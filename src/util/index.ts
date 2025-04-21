@@ -8,6 +8,10 @@ export function isString(str: any) {
     return typeof str === "string";
 }
 
+export function isFunction(fn: any) {
+    return typeof fn === "function";
+}
+
 
 // from https://github.com/ebidel/idb.filesystem.js/blob/master/src/idb.filesystem.js
 // When saving an entry, the fullPath should always lead with a slash and never
@@ -104,13 +108,21 @@ export function createAsyncIterator<V = any>(keyValueArray: V[]) {
     };
 }
 
-export function createAsyncIteratorHoc<V = any>(valuesCreator: () => Promise<V[]> | V[]) {
+export function createAsyncIteratorHoc<V = any>(valuesCreator: () => Promise<V[]> | V[], clearFun?: () => void | Promise<void>) {
     return {
         async *[Symbol.asyncIterator]() {
-            const keyValueArray = await Promise.resolve(valuesCreator())
-            for (const item of keyValueArray) {
-                await Promise.resolve(item);
-                yield item; // 返回键值对对象
+            try {
+                const keyValueArray = await Promise.resolve(valuesCreator())
+                for (const item of keyValueArray) {
+                    await Promise.resolve(item);
+                    yield item; // 返回键值对对象
+                }
+            } catch (err: any) {
+                throw err
+            } finally {
+                if (isFunction(clearFun) && clearFun) {
+                    await clearFun()
+                }
             }
         }
     };
