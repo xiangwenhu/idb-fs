@@ -1,12 +1,11 @@
 import { IDB_FILE_STORE_NAME, IDB_INFO_STORE_NAME } from "../const/index";
 
-interface Options {
+interface GetDataBaseOptions {
     dbVersion: number;
     dbName: string;
 }
 
-
-export function getDatabase(options: Options): Promise<IDBDatabase> {
+export function getDatabase(options: GetDataBaseOptions): Promise<IDBDatabase> {
     const { dbVersion, dbName } = options;
 
     const infoStoreName = IDB_INFO_STORE_NAME;
@@ -26,6 +25,8 @@ export function getDatabase(options: Options): Promise<IDBDatabase> {
         }
         request.onupgradeneeded = event => {
             const db = (event.target! as any).result as IDBDatabase;
+
+            // 创建信息存储区
             if (!db.objectStoreNames.contains(infoStoreName)) {
                 const store = db.createObjectStore(infoStoreName, {
                     keyPath: ['parentPath', 'name'], // 复合主键
@@ -36,6 +37,7 @@ export function getDatabase(options: Options): Promise<IDBDatabase> {
                 store.createIndex('kind', 'kind', { unique: false });              // 按类型分类
             }
 
+            // 创建文件存储区
             if (!db.objectStoreNames.contains(fileStoreName)) {
                 db.createObjectStore(fileStoreName)
             }

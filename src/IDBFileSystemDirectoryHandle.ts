@@ -1,32 +1,8 @@
 import { IDBFileSystemFileHandle } from "./IDBFileSystemFileHandle";
 import { IDBFileSystemHandle } from "./IDBFileSystemHandle"
-import { GetHandleOptions, FileSystemHandleMetaData, HandleKind, RemoveEntryOptions } from "./types/index"
-import { protectProperty, resolveToFullPath } from "./util/index";
+import { GetHandleOptions, HandleKind, RemoveEntryOptions } from "./types/index"
 
-export class IDBFileSystemDirectoryHandle implements IDBFileSystemHandle {
-
-    // provider的信息，会通过 Object.defineProperty 挂载
-    protected provider!: any;
-
-    // 目录名，会通过 Object.defineProperty 挂载
-    protected directoryName!: string;
-
-    // 文件一些原始数据， 会通过 Object.defineProperty 挂载
-    metaData!: FileSystemHandleMetaData;
-
-    constructor(directoryName: string) {
-        protectProperty(this, "directoryName", directoryName)
-    }
-
-    get fullPath(): string {
-        return resolveToFullPath(this.metaData.parentPath, this.name)
-    }
-
-    // 定义一个名为 key 的 getter 方法
-    get key(): [string, string]{
-        // 返回一个数组，数组中包含 this.metaData 属性的值
-        return [this.metaData.parentPath, this.name]
-    }
+export class IDBFileSystemDirectoryHandle extends IDBFileSystemHandle {
 
     /**
      * 类型
@@ -34,31 +10,6 @@ export class IDBFileSystemDirectoryHandle implements IDBFileSystemHandle {
      */
     get kind(): HandleKind {
         return "directory"
-    }
-
-    /**
-     * 名称
-     * 参考：https://developer.mozilla.org/en-US/docs/Web/API/FileSystemHandle/name
-     */
-    get name() {
-        return this.directoryName
-    }
-
-    /**
-     * 是不是同一个 IDBFileSystemDirectoryHandle
-     * 参考：https://developer.mozilla.org/en-US/docs/Web/API/FileSystemHandle/isSameEntry
-     * @param fileSystemHandle 
-     */
-    isSameEntry(fileSystemHandle: IDBFileSystemHandle): Promise<boolean> {
-        return this.provider.isSameEntry(this, fileSystemHandle)
-    }
-
-    /**
-     * https://developer.mozilla.org/en-US/docs/Web/API/FileSystemHandle/remove
-     * @param options 
-     */
-    remove(options?: RemoveEntryOptions): Promise<undefined> {
-        return this.provider.remove(this, options)
     }
 
     /**

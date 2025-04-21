@@ -15,34 +15,37 @@
     <script>
         // 创建目录和文件
         (async function name(params) {
-            let rootDir = await IDBFileSystem.getInstance();
-            let dirHandle = await rootDir.getDirectoryHandle(
+            const rootDir = await IDBFileSystem.getInstance();
+            const dirHandle = await rootDir.getDirectoryHandle(
                 "测试文件夹1",
                 { create: true }
             );
-            let dirHandleL2 = await dirHandle.getDirectoryHandle(
+            const dirHandleL2 = await dirHandle.getDirectoryHandle(
                 "测试文件夹1的子文件夹1",
                 { create: true }
             );
-            let dirHandleL2_2 = await dirHandle.getDirectoryHandle(
-                "测试文件夹1的子文件夹2",
-                { create: true }
-            );
 
-            let fileHandle = await rootDir.getFileHandle(
-                "测试文件1.txt",
-                { create: true }
-            );
 
-            let fileHandleL2_1 = await dirHandleL2.getFileHandle(
+            const fileHandleL2_1 = await dirHandleL2.getFileHandle(
                 "测试文件夹1的子文件夹1的文件.txt",
                 { create: true }
             );
-            let fileHandleL2_2 = await dirHandleL2.getFileHandle(
+            const fileHandleL2_2 = await dirHandleL2.getFileHandle(
                 "测试文件夹1的子文件夹1的文件2.txt",
                 { create: true }
             );
 
+
+
+            const dirHandleL2_2 = await dirHandle.getDirectoryHandle(
+                "测试文件夹1的子文件夹2",
+                { create: true }
+            );
+
+            const fileHandle = await rootDir.getFileHandle(
+                "测试文件1.txt",
+                { create: true }
+            );
 
 
 
@@ -83,8 +86,14 @@
 
 
             // getFile
-            // fileHandleL2_1.getFile().then(r=> console.log("fileHandle file:", r));
-            // fileHandleL2_2.getFile().then(r=> console.log("fileHandleL2_2 file:", r))
+            // fileHandleL2_1.getFile().then(r => {
+            //     const fd = new FileReader();
+            //     fd.readAsText(r);
+            //     fd.onload = function () {
+            //         console.log("fileHandleL2_1 file:", fd.result);
+            //     }
+            // });
+            // fileHandleL2_2.getFile().then(r => console.log("fileHandleL2_2 file:", r))
 
 
 
@@ -107,7 +116,7 @@
             //     recursive: true
             // })
 
-            rootDir.remove()
+            // rootDir.remove()
         })();
     </script>
 </body>

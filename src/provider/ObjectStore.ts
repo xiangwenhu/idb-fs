@@ -77,35 +77,29 @@ export default class ObjectStore<K = IDBValidKey | null, D = any> {
         direction?: IDBCursorDirection;
         onSuccess: (ev: Event) => any
     }): Promise<R> {
-
         try {
-
             const { name, query, type, onSuccess, direction } = options;
             return new Promise((resolve, reject) => {
                 // 获得事务
-                const trans = this.transaction
-
-                const store = trans.objectStore(this.storeName)
-                trans.objectStore(this.storeName)
-
+                const trans = this.transaction;
+                const store = trans.objectStore(this.storeName);
                 const index = store.index(name);
 
-                const request = type == "openCursor" ? index.openCursor(query, direction) : index.openKeyCursor(query, direction)
+                const request = type == "openCursor" ? index.openCursor(query, direction) : index.openKeyCursor(query, direction);
 
                 request.onsuccess = function (event: any) {
-                    onSuccess(event)
+                    onSuccess(event);
                 }
                 trans.oncomplete = function () {
-                    return resolve(undefined as R)
+                    return resolve(undefined as R);
                 }
                 // 请求失败
-                request.onerror = () => reject(request.error)
+                request.onerror = () => reject(request.error);
                 // 事务失败
-                trans.onerror = () => reject(trans.error)
-
+                trans.onerror = () => reject(trans.error);
             })
         } catch (err) {
-            return Promise.reject(err)
+            return Promise.reject(err);
         }
     }
 

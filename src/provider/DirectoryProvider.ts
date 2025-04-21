@@ -3,7 +3,7 @@ import { IDBFileSystemDirectoryHandle } from "../IDBFileSystemDirectoryHandle";
 import { IDBFileSystemFileHandle } from "../IDBFileSystemFileHandle";
 import { IDBFileSystemHandle } from "../IDBFileSystemHandle";
 import { DIR_OPEN_BOUND, DIR_SEPARATOR } from "../const/index";
-import { GetHandleOptions, StoreInfoBaseItem, StoreFileItem, StoreInfoDirectoryItem, StoreInfoFileItem, RemoveEntryOptions, InfoStoreKey } from "../types/index";
+import { GetHandleOptions, StoreInfoBaseItem, StoreFileItem, StoreInfoDirectoryItem, StoreInfoFileItem, RemoveEntryOptions, InfoStoreKey, FileSystemFileHandleMetaData } from "../types/index";
 import { checkFilename, createAsyncIteratorHoc, isString, isValidDirectoryName, isValidFileName, protectProperty, resolveToFullPath, uuid } from "../util/index";
 import BaseProvider from "./BaseProvider";
 import FileProvider from "./FileProvider";
@@ -23,6 +23,9 @@ export class DirectoryProvider extends BaseProvider {
     }
 
 
+    /**
+     * 根据基本信息创建 IDBFileSystemDirectoryHandle 实例
+     */
     public createDirectoryHandle(info: StoreInfoBaseItem | string, parentPath: string) {
         const name = typeof info == "string" ? info : info.name;
         const handle = new IDBFileSystemDirectoryHandle(name);
@@ -31,7 +34,9 @@ export class DirectoryProvider extends BaseProvider {
         return handle
     }
 
-    // 定义一个私有方法 toFileHandle，用于将给定的信息对象或字符串转换为文件句柄
+    /**
+     *  根据基本信息创建 IDBFileSystemFileHandle 实例
+     */
     private createFileHandle(info: StoreInfoFileItem, parentPath: string) {
         // 根据 info 的类型确定文件名
         // 如果 info 是字符串类型，则直接使用该字符串作为文件名
@@ -70,10 +75,11 @@ export class DirectoryProvider extends BaseProvider {
         }
         // 删除目录或者文件
         for (let i = 0; i < entries.length; i++) {
-            const [key, item] = entries[i];
+            const [_key, item] = entries[i];
             await this.deleteInfoByHandle(item);
             if (item.kind == "file") {
-                await this.fileStore.delete((item as IDBFileSystemFileHandle).metaData.fileKey);
+                const fileKey =  ((item as IDBFileSystemFileHandle).metaData as FileSystemFileHandleMetaData).fileKey
+                await this.fileStore.delete(fileKey);
             }
         }
 
@@ -86,8 +92,7 @@ export class DirectoryProvider extends BaseProvider {
         filter: (key: InfoStoreKey, item: StoreInfoBaseItem) => boolean,
         getData: (key: InfoStoreKey, item: StoreInfoBaseItem) => D) {
 
-        const entries: D[] = []
-
+        const entries: D[] = [];
         return this.infoStore.openIndexCursor({
             name: "parentPath",
             type: "openCursor",

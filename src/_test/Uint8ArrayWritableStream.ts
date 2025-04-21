@@ -4,9 +4,5 @@ import Uint8ArrayWritableStream from "../Uint8ArrayWritableStream";
 
     const writableStream = new Uint8ArrayWritableStream(new Uint8Array(0));
 
-   
-    writableStream.write("")
-
-
 
 })();

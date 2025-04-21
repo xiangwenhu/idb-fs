@@ -22,7 +22,7 @@ export default class Uint8ArrayWritableStream extends WritableStream<DataType | 
     private closed = false;
     // private eventTarget = new EventTarget(); // 事件派发器
 
-    constructor(private buffer: Uint8Array, private options?: Uint8ArrayWritableStreamOptions) {
+    constructor(private arrayBuffer: Uint8Array, private options?: Uint8ArrayWritableStreamOptions) {
 
         const sink: UnderlyingSink = {
             async start() {
@@ -87,11 +87,11 @@ export default class Uint8ArrayWritableStream extends WritableStream<DataType | 
         const pos = position ?? this.cursor;
         const uint8Data = await this.convertToUint8Array(data);
 
-        if (pos + uint8Data.length > this.buffer.length) {
+        if (pos + uint8Data.length > this.arrayBuffer.length) {
             this.expandBuffer(pos + uint8Data.length);
         }
 
-        this.buffer.set(uint8Data, pos);
+        this.arrayBuffer.set(uint8Data, pos);
         this.cursor = pos + uint8Data.length;
     }
 
@@ -110,12 +110,12 @@ export default class Uint8ArrayWritableStream extends WritableStream<DataType | 
 
     private expandBuffer(newSize: number): void {
         const newBuffer = new Uint8Array(newSize);
-        newBuffer.set(this.buffer);
-        this.buffer = newBuffer;
+        newBuffer.set(this.arrayBuffer);
+        this.arrayBuffer = newBuffer;
     }
 
     private handleSeek(position: number): void {
-        if (position < 0 || position > this.buffer.length) {
+        if (position < 0 || position > this.arrayBuffer.length) {
             throw new DOMException("Invalid position", "InvalidStateError");
         }
         this.cursor = position;
@@ -124,8 +124,8 @@ export default class Uint8ArrayWritableStream extends WritableStream<DataType | 
     private handleTruncate(size: number): void {
         if (size < 0) throw new DOMException("Invalid size", "InvalidStateError");
         const newBuffer = new Uint8Array(size);
-        newBuffer.set(this.buffer.subarray(0, size));
-        this.buffer = newBuffer;
+        newBuffer.set(this.arrayBuffer.subarray(0, size));
+        this.arrayBuffer = newBuffer;
         this.cursor = Math.min(this.cursor, size);
     }
 
@@ -134,8 +134,8 @@ export default class Uint8ArrayWritableStream extends WritableStream<DataType | 
         return Promise.resolve(void 0);
     }
 
-    getResult() {
-        return this.buffer;
+    get buffer() {
+        return this.arrayBuffer;
     }
 
     // addEventListener(type: 'close', listener: () => void, options?: AddEventListenerOptions | boolean): void {

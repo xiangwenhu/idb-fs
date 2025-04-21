@@ -58,7 +58,7 @@ export default class FileProvider extends BaseProvider {
         const writableStream = new Uint8ArrayWritableStream(new Uint8Array(buffer), {
             onClose: async () => {
                 const info: StoreInfoFileItem = (await this.infoStore.get([fileHandle.metaData.parentPath, fileHandle.name])) as StoreInfoFileItem;
-                this.fileStore.put(writableStream.getResult(), info.fileKey);
+                this.fileStore.put(writableStream.buffer, info.fileKey);
             },
         });
 

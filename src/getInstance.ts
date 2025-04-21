@@ -1,9 +1,10 @@
-import { DIR_SEPARATOR, IDB_DATABASE_PREFIX, IDB_DEFAULT_DATABASE_NAME, IDB_FILE_STORE_NAME, IDB_INFO_STORE_NAME, NOT_SUPPORTED } from "./const/index";
+import { DIR_SEPARATOR, FILE_ERROR, IDB_DATABASE_PREFIX, IDB_DEFAULT_DATABASE_NAME, IDB_FILE_STORE_NAME, IDB_INFO_STORE_NAME } from "./const/index";
 import { DirectoryProvider } from "./provider/DirectoryProvider";
 import FileProvider from "./provider/FileProvider";
 import ObjectStore from "./provider/ObjectStore";
 import { InfoStoreKey, InstanceOptions, StoreFileItem, StoreInfoItem } from "./types/index";
 import { getDatabase } from "./util/db";
+import { createDOMException } from "./util/error";
 
 const DefaultOptions: InstanceOptions = {
     name: IDB_DEFAULT_DATABASE_NAME
@@ -14,7 +15,7 @@ export function isSupported() {
 }
 
 export function getInstance(options: InstanceOptions = DefaultOptions) {
-    if (!isSupported()) return Promise.reject(NOT_SUPPORTED);
+    if (!isSupported()) return Promise.reject(createDOMException(DOMException.NOT_SUPPORTED_ERR, FILE_ERROR.NOT_SUPPORTED));
     const opts = Object.assign({}, DefaultOptions, options || {});
 
     const dbName = `${opts.name}`.trim();

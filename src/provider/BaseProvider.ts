@@ -6,9 +6,19 @@ import { protectProperty } from "../util/index";
 import { createDOMException } from "../util/error";
 import { IDBFileSystemHandle } from "../IDBFileSystemHandle";
 
+
+/**
+ * Base class for all providers
+ */
 export default class BaseProvider {
 
+    /**
+     * Info store
+     */
     protected infoStore!: ObjectStore<InfoStoreKey, StoreInfoBaseItem>;
+    /**
+     * File store
+     */
     protected fileStore!: ObjectStore<string, StoreFileItem>
 
     constructor(
@@ -44,6 +54,9 @@ export default class BaseProvider {
         return this.fileStore.get(fileKey);
     }
 
+    /**
+     *  Check if the info item is a file
+     */
     protected checkFileInfo(info: StoreInfoBaseItem | undefined) {
         if (!info) {
             throw createDOMException(DOMException.NOT_FOUND_ERR);
@@ -53,6 +66,9 @@ export default class BaseProvider {
         }
     }
 
+    /**
+     * Check if the info item is a directory
+     */
     protected checkDirectoryInfo(info: StoreInfoBaseItem | undefined) {
         if (!info) {
             throw createDOMException(DOMException.NOT_FOUND_ERR);
