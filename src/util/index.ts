@@ -108,24 +108,24 @@ export function createAsyncIterator<V = any>(keyValueArray: V[]) {
     };
 }
 
-export function createAsyncIteratorHoc<V = any>(valuesCreator: () => Promise<V[]> | V[], clearFun?: () => void | Promise<void>) {
-    return {
-        async *[Symbol.asyncIterator]() {
-            try {
-                const keyValueArray = await Promise.resolve(valuesCreator())
-                for (const item of keyValueArray) {
-                    await Promise.resolve(item);
-                    yield item; // 返回键值对对象
-                }
-            } catch (err: any) {
-                throw err
-            } finally {
-                if (isFunction(clearFun) && clearFun) {
-                    await clearFun()
-                }
+export function createAsyncIteratorHoc<V = any>(
+    valuesCreator: () => Promise<V[]> | V[],
+    clearFun?: () => void | Promise<void>
+): AsyncGenerator<V, undefined, unknown> {  // 关键修改：第二个类型参数改为 undefined
+    return (async function* () {
+        try {
+            const items = await Promise.resolve(valuesCreator());
+            for (const item of items) {
+                await Promise.resolve(item);
+                yield item;
+            }
+            return undefined
+        } finally {
+            if (typeof clearFun === 'function') {
+                await clearFun();
             }
         }
-    };
+    })();
 }
 
 export function protectProperty(obj: Object, property: PropertyKey, value: any) {

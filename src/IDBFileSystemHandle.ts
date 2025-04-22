@@ -1,10 +1,11 @@
-import { FileSystemFileHandleMetaData, FileSystemHandleMetaData, HandleKind } from "./types/index";
-import { IFileSystemHandle } from "./types/IFileSystemHandle";
+import { HandleKind } from "./types/base";
+import { IDBFileSystemDirectoryHandleProvider, IDBFileSystemFileHandleProvider, IFileSystemHandle, PermissionOptions } from "./types/index";
+import { FileSystemFileHandleMetaData, FileSystemHandleMetaData } from "./types/internal";
 import { protectProperty, resolveToFullPath } from "./util/index";
 
 export class IDBFileSystemHandle implements IFileSystemHandle {
     // provider的信息，会通过 Object.defineProperty 挂载
-    protected provider!: any;
+    protected provider!:  IDBFileSystemFileHandleProvider | IDBFileSystemDirectoryHandleProvider;
 
     // 目录名，会通过 Object.defineProperty 挂载
     protected handleName!: string;
@@ -47,7 +48,7 @@ export class IDBFileSystemHandle implements IFileSystemHandle {
  * 参考：https://developer.mozilla.org/en-US/docs/Web/API/FileSystemHandle/isSameEntry
  * @param fileSystemHandle 
  */
-    isSameEntry(fileSystemHandle: IDBFileSystemHandle): Promise<boolean> {
+    isSameEntry(fileSystemHandle: IFileSystemHandle) {
         return this.provider.isSameEntry(this, fileSystemHandle)
     }
 
@@ -56,8 +57,16 @@ export class IDBFileSystemHandle implements IFileSystemHandle {
      * 参考：https://developer.mozilla.org/en-US/docs/Web/API/FileSystemHandle/remove
      * @param options 
      */
-    remove(): Promise<undefined> {
+    remove() {
         return this.provider.remove(this)
+    }
+
+    queryPermission(options?: PermissionOptions){
+       return this.provider.queryPermission(this, options)
+    }
+
+    requestPermission(options?: PermissionOptions) {
+        return this.provider.requestPermission(this, options)
     }
 }
 

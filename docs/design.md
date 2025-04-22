@@ -14,20 +14,22 @@
 ### API 
 参考 [File System API](https://developer.mozilla.org/en-US/docs/Web/API/File_System_API), 核心实现
 
-* FileSystemHandle
-  * kind
-  * name
-  * isSameEntry()
-  * remove()
-* FileSystemFileHandle
-  * createSyncAccessHandle() XX
-  * createWritable() ??
-  * getFile()
-* FileSystemDirectoryHandle
-  * entries()
-  * getDirectoryHandle()
-  * getFileHandle()
-  * keys()
-  * removeEntry()
-  * resolve() ？？
-  * values()
+- [x] FileSystemHandle
+  - [x] kind
+  - [x] name
+  - [x] isSameEntry()
+  - [x] remove()
+  - [x] queryPermission()
+  - [x] requestPermission()
+- [x] FileSystemFileHandle
+  - [ ] createSyncAccessHandle() （Worker使用的同步API, 不实现）
+  - [x] createWritable()         （非标准参数 mode未实现）
+  - [x] getFile()
+- [x]  FileSystemDirectoryHandle
+  - [x] entries()
+  - [x] getDirectoryHandle()
+  - [x] getFileHandle()
+  - [x] keys()
+  - [x] removeEntry()
+  - [x] resolve()
+  - [x] values()

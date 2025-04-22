@@ -1,83 +1,73 @@
-/**
- * handle type
- */
-export type HandleKind = "file" | "directory";
+import { HandleKind, TypedArray } from "./base";
 
-/**
- * instance options
- */
 export interface InstanceOptions {
-    name?: string;
-}
-
-export interface RemoveEntryOptions {
-    recursive?: boolean;
-}
-
-export interface GetHandleOptions {
-    create?: boolean;
-}
-
-
-
-
-export interface StoreInfoBaseItem {
-    parentPath: string;
-    kind: HandleKind;
     name: string;
-    createTime: number;
-    lastModifiedTime: number;
 }
 
-export interface StoreInfoFileItem extends StoreInfoBaseItem {
-    /**
-     * 文件的key
-     */
-    fileKey: string;
-    /**
-     * 媒体类型
-     */
-    type?: string; // mime type
+export interface PermissionOptions {
+    mode?: "readwrite" | "read";
 }
 
-
-export interface StoreInfoDirectoryItem extends StoreInfoBaseItem {
-    kind: "directory"
+export interface SyncAccessHandleOptions {
+    mode: "read-only" | "readwrite" | "readwrite-unsafe"
 }
 
-export type StoreInfoItem = StoreInfoFileItem | StoreInfoDirectoryItem;
-
-
-export type StoreFileItem = Uint8Array;
-
-
-
-
-export interface FileSystemHandleMetaData {
-    parentPath: string;
-}
-
-export interface FileSystemFileHandleMetaData extends FileSystemHandleMetaData {
-    fileKey: string;
+export interface IFileSystemHandle {
+    readonly kind: HandleKind;
+    readonly name: string;
+    isSameEntry(fileSystemHandle: IFileSystemHandle): Promise<boolean>;
+    remove(options?: FileSystemRemoveOptions): Promise<void>;
+    queryPermission(descriptor?: PermissionOptions): Promise<PermissionState>;
+    requestPermission(descriptor?: PermissionOptions): Promise<PermissionState>;
 }
 
 
-
-export type TypedArray = Int8Array |
-    Uint8Array |
-    Uint8ClampedArray |
-    Int16Array |
-    Uint16Array |
-    Int32Array |
-    Uint32Array |
-    // Float16Array |
-    Float32Array |
-    Float64Array;
-// BigInt64Array |
-// BigUint64Array;
+export interface IIDBFileSystemWritableFileStream extends WritableStream {
+    write(data: TypedArray): Promise<void>;
+    seek(offset: number): Promise<void>;
+    truncate(size: number): Promise<void>;
+}
 
 
-/**
- * [parentPath, name]; // 主键数组需严格对应字段顺序
- */
-export type InfoStoreKey = [string, string];
+export interface IIDBFileSystemFileHandle extends IFileSystemHandle {
+    readonly kind: HandleKind;
+    createWritable(options?: FileSystemCreateWritableOptions): Promise<IIDBFileSystemWritableFileStream>;
+    getFile(): Promise<File>;
+    createSyncAccessHandle(): Promise<unknown>;
+}
+
+export interface IIDBFileSystemDirectoryHandle extends IFileSystemHandle {
+    readonly kind: HandleKind;
+    entries(): FileSystemDirectoryHandleAsyncIterator<[string, IFileSystemHandle]>;
+    getDirectoryHandle(name: string, options?: FileSystemGetDirectoryOptions): Promise<IIDBFileSystemDirectoryHandle>;
+    getFileHandle(name: string, options?: FileSystemGetFileOptions): Promise<IIDBFileSystemFileHandle>;
+    keys(): FileSystemDirectoryHandleAsyncIterator<string>;
+    removeEntry(name: string, options: FileSystemRemoveOptions): Promise<void>;
+    resolve(possibleDescendant: IFileSystemHandle): Promise<string[] | null>;
+    values(): FileSystemDirectoryHandleAsyncIterator<IFileSystemHandle>
+}
+
+export interface IDBFileSystemFileHandleProvider {
+    isSameEntry(handle1: IFileSystemHandle, handle2: IFileSystemHandle): Promise<boolean>;
+    remove(handle: IFileSystemHandle, options?: FileSystemRemoveOptions): Promise<void>;
+    queryPermission(handle: IFileSystemHandle, descriptor?: PermissionOptions): Promise<PermissionState>;
+    requestPermission(handle: IFileSystemHandle, descriptor?: PermissionOptions): Promise<PermissionState>;
+    createWritable(handle: IFileSystemHandle, options?: FileSystemCreateWritableOptions): Promise<IIDBFileSystemWritableFileStream>;
+    getFile(handle: IFileSystemHandle): Promise<File>;
+    createSyncAccessHandle(handle: IFileSystemHandle): Promise<unknown>;
+}
+export interface IDBFileSystemDirectoryHandleProvider {
+    isSameEntry(handle: IFileSystemHandle, handle2: IFileSystemHandle): Promise<boolean>;
+    remove(handle: IFileSystemHandle, options?: FileSystemRemoveOptions): Promise<void>;
+    queryPermission(handle: IFileSystemHandle, descriptor?: PermissionOptions): Promise<PermissionState>;
+    requestPermission(handle: IFileSystemHandle, descriptor?: PermissionOptions): Promise<PermissionState>;
+    entries(handle: IFileSystemHandle,): FileSystemDirectoryHandleAsyncIterator<[string, IFileSystemHandle]>;
+    getDirectoryHandle(handle: IFileSystemHandle, name: string, options?: FileSystemGetDirectoryOptions): Promise<IIDBFileSystemDirectoryHandle>;
+    getFileHandle(handle: IFileSystemHandle, name: string, options?: FileSystemGetFileOptions): Promise<IIDBFileSystemFileHandle>;
+    keys(handle: IFileSystemHandle,): FileSystemDirectoryHandleAsyncIterator<string>;
+    removeEntry(handle: IFileSystemHandle, name: string, options: FileSystemRemoveOptions): Promise<void>;
+    resolve(handle: IFileSystemHandle, possibleDescendant: IFileSystemHandle): Promise<string[] | null>;
+    values(handle: IFileSystemHandle,): FileSystemDirectoryHandleAsyncIterator<IFileSystemHandle>
+}
+
+

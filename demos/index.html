@@ -77,22 +77,28 @@
 
 
             // createWritable
-            // const contents = "我们都是好孩子我们都是好孩子我们都是好孩子我们都是好孩子我们都是好孩子我们都是好孩子我们都是好孩子我们都是好孩子"
-            // const writable = await fileHandleL2_1.createWritable();
-            // // Write the contents of the file to the stream.
-            // await writable.write(contents);
-            // // Close the file and write the contents to disk.
-            // await writable.close();
+
+            const file = await fileHandleL2_1.getFile();
+            const contents = "this is the contents of the file";
+            const writable = await fileHandleL2_1.createWritable({
+                keepExistingData: false
+            });
+            // Write the contents of the file to the stream.
+
+            const blob = new Blob([file, contents]);
+            await writable.write(blob);
+            // Close the file and write the contents to disk.
+            await writable.close();
 
 
             // getFile
-            // fileHandleL2_1.getFile().then(r => {
-            //     const fd = new FileReader();
-            //     fd.readAsText(r);
-            //     fd.onload = function () {
-            //         console.log("fileHandleL2_1 file:", fd.result);
-            //     }
-            // });
+            fileHandleL2_1.getFile().then(r => {
+                const fd = new FileReader();
+                fd.readAsText(r);
+                fd.onload = function () {
+                    console.log("fileHandleL2_1 file:", fd.result);
+                }
+            });
             // fileHandleL2_2.getFile().then(r => console.log("fileHandleL2_2 file:", r))
 
 

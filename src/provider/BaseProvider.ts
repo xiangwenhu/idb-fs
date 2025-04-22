@@ -1,11 +1,11 @@
-import { FileSystemFileHandleMetaData, FileSystemHandleMetaData, StoreInfoBaseItem, StoreFileItem, StoreInfoFileItem, InfoStoreKey } from "../types/index";
-import ObjectStore from "./ObjectStore";
-import { IDBFileSystemFileHandle } from "../IDBFileSystemFileHandle";
+import { PermissionOptions } from "../types/index";
 import { IDBFileSystemDirectoryHandle } from "../IDBFileSystemDirectoryHandle";
-import { protectProperty } from "../util/index";
-import { createDOMException } from "../util/error";
+import { IDBFileSystemFileHandle } from "../IDBFileSystemFileHandle";
 import { IDBFileSystemHandle } from "../IDBFileSystemHandle";
-
+import { FileSystemFileHandleMetaData, FileSystemHandleMetaData, InfoStoreKey, StoreFileItem, StoreInfoBaseItem } from "../types/internal";
+import { createDOMException } from "../util/error";
+import { protectProperty } from "../util/index";
+import ObjectStore from "./ObjectStore";
 
 /**
  * Base class for all providers
@@ -77,5 +77,14 @@ export default class BaseProvider {
             throw createDOMException(DOMException.TYPE_MISMATCH_ERR);
         }
     }
+
+    queryPermission(_fileHandle: IDBFileSystemFileHandle, _options?: PermissionOptions): Promise<PermissionState> {
+        return Promise.resolve('granted')
+    }
+
+    requestPermission(_fileHandle: IDBFileSystemFileHandle, _options?: PermissionOptions): Promise<PermissionState> {
+        return Promise.resolve('granted')
+    }
+
 
 }

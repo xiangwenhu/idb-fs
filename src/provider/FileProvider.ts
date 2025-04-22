@@ -1,12 +1,17 @@
-import { StoreInfoBaseItem, StoreFileItem, StoreInfoFileItem, InfoStoreKey } from "../types/index";
+import { IDBFileSystemFileHandleProvider, PermissionOptions } from "../types/index";
+import { StoreInfoBaseItem, StoreFileItem, StoreInfoFileItem, InfoStoreKey } from "../types/internal";
+
 import ObjectStore from "./ObjectStore";
 import { IDBFileSystemFileHandle } from "../IDBFileSystemFileHandle";
-import Uint8ArrayWritableStream from "../Uint8ArrayWritableStream";
+import IDBFileSystemWritableFileStream from "../IDBFileSystemWritableFileStream";
 import BaseProvider from "./BaseProvider";
 import { createDOMException } from "../util/error";
 import { IDBFileSystemHandle } from "../IDBFileSystemHandle";
 
-export default class FileProvider extends BaseProvider {
+export default class FileProvider extends BaseProvider implements IDBFileSystemFileHandleProvider {
+
+    private writableCreate: boolean = false;
+
     constructor(
         infoStore: ObjectStore<InfoStoreKey, StoreInfoBaseItem>,
         fileStore: ObjectStore<string, StoreFileItem>
@@ -15,7 +20,9 @@ export default class FileProvider extends BaseProvider {
     }
 
 
-    async isSameEntry(handle1: IDBFileSystemHandle, handle2: IDBFileSystemHandle) {
+
+
+    async isSameEntry(handle1: IDBFileSystemHandle, handle2: IDBFileSystemHandle): Promise<boolean> {
         if (handle1.kind !== 'file' || handle2.kind !== 'file') {
             return false
         }
@@ -34,7 +41,7 @@ export default class FileProvider extends BaseProvider {
 
     }
 
-    async getFile(fileHandle: IDBFileSystemFileHandle) {
+    async getFile(fileHandle: IDBFileSystemFileHandle): Promise<File> {
         const info: StoreInfoBaseItem | undefined = await this.infoStore.get([fileHandle.metaData.parentPath, fileHandle.name]);
         this.checkFileInfo(info);
 
@@ -52,10 +59,16 @@ export default class FileProvider extends BaseProvider {
     }
 
 
-    async createWritable(fileHandle: IDBFileSystemFileHandle) {
-        const file = await this.getFile(fileHandle);
-        const buffer = await file.arrayBuffer();
-        const writableStream = new Uint8ArrayWritableStream(new Uint8Array(buffer), {
+    async createWritable(fileHandle: IDBFileSystemFileHandle, options?: FileSystemCreateWritableOptions) {
+        let buffer: Uint8Array;
+        if (options && options.keepExistingData === true) {
+            const file = await this.getFile(fileHandle);
+            const arrayBuffer = await file.arrayBuffer();
+            buffer = new Uint8Array(arrayBuffer);
+        } else {
+            buffer = new Uint8Array(0);
+        }
+        const writableStream = new IDBFileSystemWritableFileStream(new Uint8Array(buffer), {
             onClose: async () => {
                 const info: StoreInfoFileItem = (await this.infoStore.get([fileHandle.metaData.parentPath, fileHandle.name])) as StoreInfoFileItem;
                 this.fileStore.put(writableStream.buffer, info.fileKey);
@@ -65,15 +78,17 @@ export default class FileProvider extends BaseProvider {
         return writableStream;
     }
 
-    async remove(fileHandle: IDBFileSystemFileHandle) {
+    async remove(fileHandle: IDBFileSystemFileHandle): Promise<void> {
         const info: StoreInfoBaseItem | undefined = await this.infoStore.get([fileHandle.metaData.parentPath, fileHandle.name]);
         this.checkFileInfo(info);
         const fileInfo = info as StoreInfoFileItem;
 
         await this.infoStore.delete([fileHandle.metaData.parentPath, fileHandle.name]);
         await this.fileStore.delete(fileInfo.fileKey);
+    }
 
-        return undefined
+    createSyncAccessHandle(fileHandle: IDBFileSystemFileHandle): Promise<unknown> {
+        throw new Error("Method not implemented.");
     }
 
 }

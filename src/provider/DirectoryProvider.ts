@@ -1,15 +1,16 @@
-import { createDOMException } from "../util/error";
 import { IDBFileSystemDirectoryHandle } from "../IDBFileSystemDirectoryHandle";
 import { IDBFileSystemFileHandle } from "../IDBFileSystemFileHandle";
 import { IDBFileSystemHandle } from "../IDBFileSystemHandle";
 import { DIR_OPEN_BOUND, DIR_SEPARATOR } from "../const/index";
-import { GetHandleOptions, StoreInfoBaseItem, StoreFileItem, StoreInfoDirectoryItem, StoreInfoFileItem, RemoveEntryOptions, InfoStoreKey, FileSystemFileHandleMetaData } from "../types/index";
-import { checkFilename, createAsyncIteratorHoc, isString, isValidDirectoryName, isValidFileName, protectProperty, resolveToFullPath, uuid } from "../util/index";
+import { IDBFileSystemDirectoryHandleProvider } from "../types/index";
+import { FileSystemFileHandleMetaData, InfoStoreKey, StoreFileItem, StoreInfoBaseItem, StoreInfoDirectoryItem, StoreInfoFileItem } from "../types/internal";
+import { createDOMException } from "../util/error";
+import { checkFilename, createAsyncIteratorHoc, isString, isValidDirectoryName, isValidFileName, protectProperty, uuid } from "../util/index";
 import BaseProvider from "./BaseProvider";
 import FileProvider from "./FileProvider";
 import ObjectStore from "./ObjectStore";
 
-export class DirectoryProvider extends BaseProvider {
+export class DirectoryProvider extends BaseProvider implements IDBFileSystemDirectoryHandleProvider {
 
     protected fileProvider!: FileProvider
 
@@ -23,6 +24,7 @@ export class DirectoryProvider extends BaseProvider {
     }
 
 
+    //#region 非协议标准API
     /**
      * 根据基本信息创建 IDBFileSystemDirectoryHandle 实例
      */
@@ -53,38 +55,6 @@ export class DirectoryProvider extends BaseProvider {
         this.setProvider(handle, this.fileProvider);
         // 返回创建的文件句柄
         return handle
-    }
-
-
-    async isSameEntry(handle1: IDBFileSystemDirectoryHandle, handle2: IDBFileSystemDirectoryHandle) {
-        if (handle1.kind !== 'directory' || handle2.kind !== 'directory') {
-            return false
-        }
-        return handle1.fullPath === handle2.fullPath
-    }
-
-    async remove(handle: IDBFileSystemDirectoryHandle, options: RemoveEntryOptions = {}) {
-        const info = await this.getInfoItemByHandle(handle);
-        if (info == undefined) createDOMException(DOMException.NOT_FOUND_ERR)
-
-
-        // 查询全部子目录或者文件
-        const entries = await this.subEntries(handle, { recursive: true });
-        if (entries.length > 0 && options.recursive !== true) {
-            throw createDOMException(DOMException.INVALID_MODIFICATION_ERR);
-        }
-        // 删除目录或者文件
-        for (let i = 0; i < entries.length; i++) {
-            const [_key, item] = entries[i];
-            await this.deleteInfoByHandle(item);
-            if (item.kind == "file") {
-                const fileKey =  ((item as IDBFileSystemFileHandle).metaData as FileSystemFileHandleMetaData).fileKey
-                await this.fileStore.delete(fileKey);
-            }
-        }
-
-        await this.deleteInfoByHandle(handle)
-        return undefined
     }
 
 
@@ -149,13 +119,46 @@ export class DirectoryProvider extends BaseProvider {
         )
     }
 
+    //#endregion
+
+
+    async isSameEntry(handle1: IDBFileSystemDirectoryHandle, handle2: IDBFileSystemDirectoryHandle) {
+        if (handle1.kind !== 'directory' || handle2.kind !== 'directory') {
+            return false
+        }
+        return handle1.fullPath === handle2.fullPath
+    }
+
+    async remove(handle: IDBFileSystemDirectoryHandle, options: FileSystemRemoveOptions = {}) {
+        const info = await this.getInfoItemByHandle(handle);
+        if (info == undefined) createDOMException(DOMException.NOT_FOUND_ERR)
+
+
+        // 查询全部子目录或者文件
+        const entries = await this.subEntries(handle, { recursive: true });
+        if (entries.length > 0 && options.recursive !== true) {
+            throw createDOMException(DOMException.INVALID_MODIFICATION_ERR);
+        }
+        // 删除目录或者文件
+        for (let i = 0; i < entries.length; i++) {
+            const [_key, item] = entries[i];
+            await this.deleteInfoByHandle(item);
+            if (item.kind == "file") {
+                const fileKey = ((item as IDBFileSystemFileHandle).metaData as FileSystemFileHandleMetaData).fileKey
+                await this.fileStore.delete(fileKey);
+            }
+        }
+
+        await this.deleteInfoByHandle(handle)
+    }
+
     entries(handle: IDBFileSystemDirectoryHandle) {
         const info = this.getInfoItemByHandle(handle);
         if (!info) throw createDOMException(DOMException.NOT_FOUND_ERR);
         return createAsyncIteratorHoc(() => this.subEntries(handle))
     }
 
-    async getDirectoryHandle(handle: IDBFileSystemDirectoryHandle, name: string, options?: GetHandleOptions) {
+    async getDirectoryHandle(handle: IDBFileSystemDirectoryHandle, name: string, options?: FileSystemGetDirectoryOptions) {
 
         checkFilename(name);
 
@@ -187,7 +190,7 @@ export class DirectoryProvider extends BaseProvider {
 
     }
 
-    async getFileHandle(handle: IDBFileSystemDirectoryHandle, name: string, options?: GetHandleOptions) {
+    async getFileHandle(handle: IDBFileSystemDirectoryHandle, name: string, options?: FileSystemGetFileOptions) {
         checkFilename(name);
         const parentPath = handle.fullPath;
         const info = await this.getInfoItem([parentPath, name]);
@@ -229,7 +232,7 @@ export class DirectoryProvider extends BaseProvider {
         return createAsyncIteratorHoc(() => this.subEntries(handle).then((entries) => entries.map((entry) => entry[0])))
     }
 
-    async removeEntry(handle: IDBFileSystemDirectoryHandle, name: string, options: RemoveEntryOptions) {
+    async removeEntry(handle: IDBFileSystemDirectoryHandle, name: string, options: FileSystemRemoveOptions) {
         if (!isString(name)) {
             throw new TypeError("name is not a valid string")
         }

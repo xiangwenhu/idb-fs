@@ -1,4 +1,4 @@
-import { TypedArray } from "./types/index";
+import { TypedArray } from "./types/base";
 
 type DataType = ArrayBuffer | TypedArray | DataView | Blob | string;
 
@@ -9,20 +9,20 @@ type WriteCommand = {
     size?: number;
 };
 
-interface Uint8ArrayWritableStreamOptions {
+interface IDBFileSystemWritableFileStreamOptions {
     onClose?(): Promise<void>;
     onStart?(): Promise<any>;
     onAbort?(): Promise<void>;
     onWrite?(): Promise<void>
 }
 
-export default class Uint8ArrayWritableStream extends WritableStream<DataType | WriteCommand> {
+export default class IDBFileSystemWritableFileStream extends WritableStream<DataType | WriteCommand> {
 
     private cursor = 0;
     private closed = false;
     // private eventTarget = new EventTarget(); // 事件派发器
 
-    constructor(private arrayBuffer: Uint8Array, private options?: Uint8ArrayWritableStreamOptions) {
+    constructor(private arrayBuffer: Uint8Array, private options?: IDBFileSystemWritableFileStreamOptions) {
 
         const sink: UnderlyingSink = {
             async start() {
@@ -151,13 +151,11 @@ export default class Uint8ArrayWritableStream extends WritableStream<DataType | 
     //     this.eventTarget.dispatchEvent(event);
     // }
 
-    public async write(data: DataType, position?: number): Promise<void> {
+    public async write(data: DataType | WriteCommand ): Promise<void> {
         const writer = this.getWriter();
         try {
             await writer.ready;
-            const chunk: DataType | WriteCommand = typeof position === 'number' ? { type: 'write', data, position } as WriteCommand : data;
-
-            await writer.write(chunk);
+            await writer.write(data);
         } finally {
             writer.releaseLock();
         }

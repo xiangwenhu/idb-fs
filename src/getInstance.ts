@@ -2,7 +2,8 @@ import { DIR_SEPARATOR, FILE_ERROR, IDB_DATABASE_PREFIX, IDB_DEFAULT_DATABASE_NA
 import { DirectoryProvider } from "./provider/DirectoryProvider";
 import FileProvider from "./provider/FileProvider";
 import ObjectStore from "./provider/ObjectStore";
-import { InfoStoreKey, InstanceOptions, StoreFileItem, StoreInfoItem } from "./types/index";
+import { InstanceOptions } from "./types/index";
+import { InfoStoreKey, StoreFileItem, StoreInfoItem } from "./types/internal";
 import { getDatabase } from "./util/db";
 import { createDOMException } from "./util/error";
 import { isValidDBName } from "./util/index";

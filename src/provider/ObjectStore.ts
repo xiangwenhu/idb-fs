@@ -3,7 +3,7 @@ interface ObjectStoreOptions {
     storeName: string;
 }
 
-type StoreMethod = "add" | "clear" | "count" | "createIndex" | "delete" | "deleteIndex" |
+type ObjectStoreMethod = "add" | "clear" | "count" | "createIndex" | "delete" | "deleteIndex" |
     "get" | "getAll" | "getAllKeys" | "index" | "openCursor" | "openKeyCursor" | "put";
 
 
@@ -21,7 +21,7 @@ export default class ObjectStore<K = IDBValidKey | null, D = any> {
         return this.db.transaction([this.storeName], "readwrite")
     }
 
-    protected toPromise<R = any>(methodName: StoreMethod, ...args: any[]): Promise<R> {
+    protected toPromise<R = any>(methodName: ObjectStoreMethod, ...args: any[]): Promise<R> {
         try {
             let onSuccess: Function;
             if (args.length >= 1 && typeof args[args.length - 1] === 'function') {
@@ -36,7 +36,6 @@ export default class ObjectStore<K = IDBValidKey | null, D = any> {
                 const store = trans.objectStore(this.storeName)
                 const method = store[methodName];
 
-                trans.objectStore(this.storeName)
                 if (!method) reject(new Error(`objectStore不存在${methodName}`));
 
                 // @ts-ignore
