@@ -21,7 +21,7 @@
   * [getFile()](https://developer.mozilla.org/en-US/docs/Web/API/FileSystemFileHandle/getFile) 获取文件
 
 * Directory API， 参见 [FileSystemDirectoryHandle](https://developer.mozilla.org/en-US/docs/Web/API/FileSystemDirectoryHandle)
-* * [kind](https://developer.mozilla.org/en-US/docs/Web/API/FileSystemHandle/kind) 类型
+  * [kind](https://developer.mozilla.org/en-US/docs/Web/API/FileSystemHandle/kind) 类型
   * [name](https://developer.mozilla.org/en-US/docs/Web/API/FileSystemHandle/name)  名称
   * [isSameEntry()](https://developer.mozilla.org/en-US/docs/Web/API/FileSystemHandle/isSameEntry) 是否相同
   * [remove()](https://developer.mozilla.org/en-US/docs/Web/API/FileSystemHandle/remove) 删除
@@ -36,7 +36,13 @@
 ## 如何使用
 
 ```javascript
+
 async function init() {
+
+  // 获取所有实例
+  const allSystems = await getAllIDBFileSystem();
+  console.log("allSystems:", allSystems);
+
   const rootDir = await getInstance();
   const dirHandle = await rootDir.getDirectoryHandle("测试文件夹1", { create: true });
   const dirHandleL2 = await dirHandle.getDirectoryHandle("测试文件夹1的子文件夹1", {
@@ -133,5 +139,6 @@ async function init() {
 
 
 ## TODO::
-* [x] 分离基础数据和二进制文件
-* [ ] 改进 entries(), values(), keys() 真游标？
+* [x] 分离基础数据和二进制文件  (2025-04-21)
+* [x] 改进基础数据存储，方便查询 (2025-04-22)
+* [ ] 改进 entries(), values(), keys() 真游标？(??咱可不改进，因为查询的改进)
