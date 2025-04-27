@@ -5,6 +5,10 @@
 基于indexedDB遵循 [File System API](https://developer.mozilla.org/en-US/docs/Web/API/File_System_API) 异步 API 实现的前端文件系统。
 
 
+## 设计结构图
+
+![](./docs/assets/idb-fs.png)
+
 ## 特点
 * 非安全上下文也可用
 * 支持多实例
@@ -141,4 +145,4 @@ async function init() {
 ## TODO::
 * [x] 分离基础数据和二进制文件  (2025-04-21)
 * [x] 改进基础数据存储，方便查询 (2025-04-22)
-* [ ] 改进 entries(), values(), keys() 真游标？(??咱可不改进，因为查询的改进)
+* [ ] 改进 entries(), values(), keys() 真游标？(??暂可不改进，因为查询的改进)

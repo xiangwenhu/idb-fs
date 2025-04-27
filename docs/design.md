@@ -4,6 +4,7 @@
 
 ### 设计图
 
+![](./assets/idb-fs.png)
 
 ### 存储
 *  一个ObjectStore存基本信息，另外一个存Blob
