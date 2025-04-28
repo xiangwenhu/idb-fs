@@ -2,7 +2,7 @@ import { DIR_SEPARATOR, FILE_ERROR, IDB_DATABASE_PREFIX, IDB_DEFAULT_DATABASE_NA
 import { DirectoryProvider } from "./provider/DirectoryProvider";
 import FileProvider from "./provider/FileProvider";
 import ObjectStore from "./provider/ObjectStore";
-import { InstanceOptions } from "./types/index";
+import { InstanceInformation, InstanceOptions } from "./types/index";
 import { InfoStoreKey, StoreFileItem, StoreInfoItem } from "./types/internal";
 import { getDatabase } from "./util/db";
 import { createDOMException } from "./util/error";
@@ -51,7 +51,7 @@ export function getInstance(options: InstanceOptions = DefaultOptions) {
         })
 }
 
-export function getAllIDBFileSystem() {
+export function getAllInstances(): Promise<InstanceInformation[]> {
     if (!isSupported()) return Promise.reject(createDOMException(DOMException.NOT_SUPPORTED_ERR, FILE_ERROR.NOT_SUPPORTED));
     return indexedDB.databases().then(dbs => {
         return dbs.filter(db => db.name && db.name.startsWith(IDB_DATABASE_PREFIX)).map(db => ({

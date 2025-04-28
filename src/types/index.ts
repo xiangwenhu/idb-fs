@@ -4,6 +4,11 @@ export interface InstanceOptions {
     name: string;
 }
 
+export interface InstanceInformation {
+    name: string;
+    version?: number;
+}
+
 export interface PermissionOptions {
     mode?: "readwrite" | "read";
 }
