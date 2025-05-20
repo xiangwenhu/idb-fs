@@ -227,8 +227,6 @@ export class DirectoryProvider extends BaseProvider implements IDBFileSystemDire
     }
 
     keys(handle: IDBFileSystemDirectoryHandle) {
-        const info = this.getInfoItemByHandle(handle);
-        if (!info) throw createDOMException(DOMException.NOT_FOUND_ERR);
         return createAsyncIteratorHoc(() => this.subEntries(handle).then((entries) => entries.map((entry) => entry[0])))
     }
 
@@ -270,8 +268,6 @@ export class DirectoryProvider extends BaseProvider implements IDBFileSystemDire
     }
 
     values(handle: IDBFileSystemDirectoryHandle) {
-        const info = this.getInfoItemByHandle(handle);
-        if (!info) throw createDOMException(DOMException.NOT_FOUND_ERR);
         return createAsyncIteratorHoc(() => this.subEntries(handle).then((entries) => entries.map((entry) => entry[1])))
     }
 }

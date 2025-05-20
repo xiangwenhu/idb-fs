@@ -57,8 +57,8 @@ export class IDBFileSystemHandle implements IFileSystemHandle {
      * 参考：https://developer.mozilla.org/en-US/docs/Web/API/FileSystemHandle/remove
      * @param options 
      */
-    remove() {
-        return this.provider.remove(this)
+    remove(options?: FileSystemRemoveOptions) {
+        return this.provider.remove(this, options)
     }
 
     queryPermission(options?: PermissionOptions){

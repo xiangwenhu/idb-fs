@@ -12,3 +12,12 @@ export type TypedArray = Int8Array |
     Float64Array;
 // BigInt64Array |
 // BigUint64Array;
+
+export type WritableStreamDataType = ArrayBuffer | TypedArray | DataView | Blob | string;
+
+export type WriteCommand = {
+    type: "write" | "seek" | "truncate";
+    data?: WritableStreamDataType;
+    position?: number;
+    size?: number;
+};

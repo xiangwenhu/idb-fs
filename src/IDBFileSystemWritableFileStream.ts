@@ -1,13 +1,4 @@
-import { TypedArray } from "./types/base";
-
-type DataType = ArrayBuffer | TypedArray | DataView | Blob | string;
-
-type WriteCommand = {
-    type: "write" | "seek" | "truncate";
-    data?: DataType;
-    position?: number;
-    size?: number;
-};
+import { WritableStreamDataType, WriteCommand } from "./types/base";
 
 interface IDBFileSystemWritableFileStreamOptions {
     onClose?(): Promise<void>;
@@ -16,7 +7,7 @@ interface IDBFileSystemWritableFileStreamOptions {
     onWrite?(): Promise<void>
 }
 
-export default class IDBFileSystemWritableFileStream extends WritableStream<DataType | WriteCommand> {
+export default class IDBFileSystemWritableFileStream extends WritableStream<WritableStreamDataType | WriteCommand> {
 
     private cursor = 0;
     private closed = false;
@@ -31,7 +22,7 @@ export default class IDBFileSystemWritableFileStream extends WritableStream<Data
                 }
                 return true; // 等待初始化完成
             },
-            write: async (chunk: DataType | WriteCommand) => {
+            write: async (chunk: WritableStreamDataType | WriteCommand) => {
                 if (this.closed) throw new DOMException("Stream closed", "InvalidStateError");
                 if (this.options?.onWrite) {
                     await this.options.onWrite();
@@ -58,7 +49,7 @@ export default class IDBFileSystemWritableFileStream extends WritableStream<Data
         super(sink);
     }
 
-    private async processChunk(chunk: DataType | WriteCommand): Promise<void> {
+    private async processChunk(chunk: WritableStreamDataType | WriteCommand): Promise<void> {
         const params = this.normalizeChunk(chunk);
 
         switch (params.type) {
@@ -76,14 +67,14 @@ export default class IDBFileSystemWritableFileStream extends WritableStream<Data
         }
     }
 
-    private normalizeChunk(chunk: DataType | WriteCommand): WriteCommand {
+    private normalizeChunk(chunk: WritableStreamDataType | WriteCommand): WriteCommand {
         const c = chunk as WriteCommand;
         if (c?.type) return c;
 
-        return { type: "write", data: chunk as DataType };
+        return { type: "write", data: chunk as WritableStreamDataType };
     }
 
-    private async handleWrite(data: DataType, position?: number): Promise<void> {
+    private async handleWrite(data: WritableStreamDataType, position?: number): Promise<void> {
         const pos = position ?? this.cursor;
         const uint8Data = await this.convertToUint8Array(data);
 
@@ -95,7 +86,7 @@ export default class IDBFileSystemWritableFileStream extends WritableStream<Data
         this.cursor = pos + uint8Data.length;
     }
 
-    private async convertToUint8Array(data: DataType): Promise<Uint8Array> {
+    private async convertToUint8Array(data: WritableStreamDataType): Promise<Uint8Array> {
         if (typeof data === 'string') {
             return new TextEncoder().encode(data);
         }
@@ -151,7 +142,7 @@ export default class IDBFileSystemWritableFileStream extends WritableStream<Data
     //     this.eventTarget.dispatchEvent(event);
     // }
 
-    public async write(data: DataType | WriteCommand ): Promise<void> {
+    public async write(data: WritableStreamDataType | WriteCommand ): Promise<void> {
         const writer = this.getWriter();
         try {
             await writer.ready;

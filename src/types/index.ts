@@ -1,4 +1,4 @@
-import { HandleKind, TypedArray } from "./base";
+import { HandleKind, TypedArray, WritableStreamDataType, WriteCommand } from "./base";
 
 export interface InstanceOptions {
     name: string;
@@ -28,7 +28,7 @@ export interface IFileSystemHandle {
 
 
 export interface IIDBFileSystemWritableFileStream extends WritableStream {
-    write(data: TypedArray): Promise<void>;
+    write(data: WritableStreamDataType | WriteCommand ): Promise<void>;
     seek(offset: number): Promise<void>;
     truncate(size: number): Promise<void>;
 }
